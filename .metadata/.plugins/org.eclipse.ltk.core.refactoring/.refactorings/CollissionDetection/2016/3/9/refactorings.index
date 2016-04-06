@@ -1,0 +1,15 @@
+1456857703041	Rename field 'finishPolygon'
+1456857717574	Rename field 'clear'
+1456857727107	Rename field 'collision'
+1456858327566	Rename field 'superTempPolygon'
+1456858341320	Rename field 'superPolygon1'
+1456858352919	Rename field 'superPolygon2'
+1456858604289	Rename field 'polygonFinished'
+1456858742879	Rename field 'init'
+1456861426019	Rename field 'calculated'
+1456862149979	Rename field 'firstLine'
+1456990971589	Rename local variable 'left'
+1456990985746	Rename local variable 'right'
+1456995436509	Copy compilation units
+1456995471547	Copy compilation units
+1457000788127	Copy compilation units

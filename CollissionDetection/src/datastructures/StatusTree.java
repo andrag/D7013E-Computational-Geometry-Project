@@ -10,20 +10,27 @@ import javax.swing.text.html.HTMLDocument.HTMLReader.ParagraphAction;
 import algorithm.*;
 
 public class StatusTree {
-
-	//import avl_tree.AVLTree;
-	//import avl_tree.Node;
-
 	/*
 	 * Kod hittad på http://stackoverflow.com/questions/5771827/implementing-an-avl-tree-in-java?rq=1
 	 */
 	public StatusNode root = null;
+	private StatusNode tempNewRoot = null;
 	public boolean isRoot = false;
 
 	public void insert(Edge data) {
 		insert(root, data);
+		
+		/* 1. Problem 2016-03-31: The tree becomes unbalanced at insertion. Additional balancing needed at root probably.
+		 * Seems below like I have tried to solve this before but have been unsure whether it worked.
+		 * 
+		 * 2. Unsure if all the rotating below was added by me or not. Compare to event tree. Maybe I added there too. Is there an original to compare to?
+		 * 
+		 * 3. The balanceTree method doesn't work for the root since it uses the nodes parent. Use code from there 
+		 * to balance from root here.
+		 */
+		
 		//Reheight root here?
-		if (height(root.left) - height(root.right) == 2) { //left heavier. Detta kollas inte i roten?? Varför?
+		/*if (height(root.left) - height(root.right) == 2) { //left heavier. Detta kollas inte i roten?? Varför?
 			//Which check to use here then?
 			if (data.isToRightOrLeftOf(root.segment)<0) {//Test. Inte säkert det funkar
 				rotateRight(root);
@@ -38,7 +45,9 @@ public class StatusTree {
 				rotateRightThenLeft(root);
 			}
 		}
-		reHeight(root);
+		reHeight(root);*/
+		balanceTree(root);//BalanceTree should be run from bottom up. Could cause problem to do it at root level all the time.
+		
 		
 	}
 
@@ -217,6 +226,7 @@ public class StatusTree {
 	//Om vi når en lower point så kommer trädet omarrangeras så att flera segment har samma x-värde. Alla segment
 	//som då har samma lower deletas.
 	public boolean delete(Edge segment, int sweep_y) {//Kollar primary edge för en nod... Vad det nu är.
+		
 		StatusNode target = newSearch(segment, sweep_y);
 	
 	
@@ -229,6 +239,7 @@ public class StatusTree {
 			balanceTree(target.parent);//Must balance root?
 			isRoot = false;
 		}
+		isRoot = false;//Beleive this must be done for all caes.
 		System.out.println("The status tree looks like this after deletion: ");
 		traverseInOrder();
 		
@@ -239,9 +250,9 @@ public class StatusTree {
 	//Funkar inte!
 	private StatusNode deleteNode(StatusNode target, int sweep_y) {
 		System.out.println("Inside deleteNode method. ");
-		if (isLeaf(target)) { //leaf
+		if (isLeaf(target)) { //leaf. Returns that root is leaf. Not good.
 			//System.out.println("Yes, it is. Is it also a left child?");
-			if (isLeftChild(target)) {
+			if (isLeftChild(target)) {//This is getting called allthough we are examining the root
 				//System.out.println("Yes. Unhook it from its parents left-pointer..");
 				target.parent.left = null;
 			} else {
@@ -288,46 +299,61 @@ public class StatusTree {
 					//Take the roots left neighbour as new root.
 					Edge newRoot = findLeftNeighbour(root); //Find leftNeighbour fixad 2015-06-03
 					if(newRoot == root.segment){
-						System.out.println("Roten är det minsta segmentet.");
+						System.out.println("Roten är det minsta segmentet.");//This cannot happen since left subtree is bigger than right :P
 					}
 					System.out.println("Findlargest hittade segmentet som ska bli newRoot: ("+newRoot.getUpper().getX()+", "+newRoot.getUpper().getRealY()+"), ("+newRoot.getLower().getX()+", "+newRoot.getLower().getRealY()+")");
 					
 					System.out.println("Statusen ser nu ut så här:");
 					traverseInOrder();
 					System.out.println("Sök efter newRoot nu");
-					StatusNode newRootNode = newSearch(newRoot, sweep_y);
+					StatusNode newRootNode = newSearch(newRoot, sweep_y);//New root is not found
 					System.out.println("New search är klar)");
-					if(isLeftChild(newRootNode)){//Case 1: The roots left child is the biggest in the left subtree.
-						newRootNode.right = root.right;
-						newRootNode.parent = null;
-						root = newRootNode;
-						
-						if(root.right != null){//Added 2015-05-12
-							root.right.parent = root; //Can be a nullPointer
-						}
-					}
-					else if(isRightChild(newRootNode)){//There are nodes in between the root and its left neighbour
-						//Detatch the left neighbour
-						newRootNode.parent.right = newRootNode.left;
-						if(newRootNode.left!=null){
-							newRootNode.left.parent=newRootNode.parent;
-						}
-						//Move to root position
-						newRootNode.left = root.left;
-						newRootNode.right = root.right;
-						newRootNode.parent = null;
-						root = newRootNode;
-						
-						if(root.left != null){//Added 2015-05-12
-							root.left.parent = root;
-						}
-						
-						if(root.right != null){//Added 2015-05-12
-							root.right.parent = root;
-						}
-					}
 					
-					//Take care of the former roots childrens parentpointer so it doesn't point towards the old root.
+					
+					//Try with tempNewRoot instead. This is set in findLargest called by findLeftNeighbour.
+					//Tested this in the beginnning of march 2016. Not sure if it works.
+					//Changed back to newRootNode 2016-04-01
+					if(newRootNode != null){
+						//if(isLeftChild(tempNewRoot)){//Case 1: The roots left child is the biggest in the left subtree.
+						if(isLeftChild(newRootNode)){
+							//tempNewRoot.right = root.right;
+							//tempNewRoot.parent = null;
+							//root = tempNewRoot;
+							
+							//If parent != root ---> newRootNode.parent.left = newRootNode.right
+							System.out.println("The new root is a left child.");
+				
+							newRootNode.right = root.right;
+							newRootNode.parent = null;
+							root = newRootNode;
+							if(root.right != null){//Added 2015-05-12
+								root.right.parent = root;
+							}
+						}
+						else if(isRightChild(newRootNode)){//There are nodes in between the root and its left neighbour
+							//Detatch the left neighbour
+							newRootNode.parent.right = newRootNode.left;
+							if(newRootNode.left!=null){
+								newRootNode.left.parent=newRootNode.parent;
+							}
+							//Move to root position
+							newRootNode.left = root.left;
+							newRootNode.right = root.right;
+							newRootNode.parent = null;
+							root = newRootNode;
+							
+							if(root.left != null){//Added 2015-05-12
+								root.left.parent = root;
+							}
+							
+							if(root.right != null){//Added 2015-05-12
+								root.right.parent = root;
+							}
+						}
+						
+						//Take care of the former roots childrens parentpointer so it doesn't point towards the old root.
+						
+					}//WHAT IF NEWROOT IS NULL? NOT CHECKED HERE! (2016-03-29)
 					
 				}
 				else{
@@ -425,11 +451,15 @@ public class StatusTree {
 		return current;
 	}
 
-	private boolean isLeftChild(StatusNode child) {
+	private boolean isLeftChild(StatusNode child) {//Tries to perform this on the root -> Nullpointer
 		//System.out.println("This node holds the following segment: ");
 		//System.out.println("("+child.getSegment().getUpper().getX()+", "+child.getSegment().getUpper().getRealY()+"), ("+child.getSegment().getLower().getX()
 			//	+", "+child.getSegment().getLower().getRealY()+")");
-		return (child.parent.left == child);
+		if(root == child){//Consistent with equals?
+			System.out.println("Tried to perform isLeftChild on the root. Why?");
+			return false;
+		}
+		else return (child.parent.left == child);
 	}
 
 	private boolean isRightChild(StatusNode child) {
@@ -437,7 +467,7 @@ public class StatusTree {
 	}
 
 	private boolean isLeaf(StatusNode node) {
-		return node.left == null && node.right == null;
+		return node.left == null && node.right == null && node.parent != null;//Added parent check for case:root 2016-03-02
 	}
 
 	private int calDifference(StatusNode node) {
@@ -670,9 +700,12 @@ public class StatusTree {
 
 
 	public void traverseInOrder() {
-		System.out.println("ROOT " + root.toString());
-		inorder(root);
-		System.out.println();
+		if(root!=null){
+			System.out.println("ROOT " + root.toString());
+			inorder(root);
+			System.out.println();
+		}
+		else System.out.println("The Status Tree is empty.");
 	}
 
 	private void inorder(StatusNode node) {
@@ -941,62 +974,42 @@ public class StatusTree {
 		 * 4. Annars, returnera null(NEJ returnera detta segment!)
 		 */
 		
-		if(n.left!=null){
+		if(n.left!=null){//NullpointerException here. Probably n is null.
 			//System.out.println("Roten har ett left child. Kör findLargest på det.");
 			return findLargest(n.left);
 		}
 		if(n.left == null && n.parent!=null){
-			if(isRightChild(n)){
+			if(isRightChild(n)){//If we are a right child our parent is smaller than us
+				//tempNewRoot = n.parent;
 				return n.parent.segment;
 			}
 			
-			else if(n.parent.parent==null){
+			else if(n.parent.parent==null){//If left child and do not have a grandparent
 				System.out.println("Försöker hitta en leftNeighbour i statusen. Ingen finns.");
-				return null;//Feeel!
+				return null;//2016-03-31: Beleive this is right. This node is the leftmost node.
 			}
 			else if(isLeftChild(n) && n.parent == n.parent.parent.right){
+				//tempNewRoot = n.parent.parent;
 				return n.parent.parent.segment;
 			}
-			else{
+			else{//This gets executed despite having a left neighbour. Why? 2016-03-29
 				System.out.println("Försöker hitta en leftNeighbour i statusen men hamnar i sista elsen i findLefNeighbour");
-				return null;
+				return null;//This might be the crook causing the NullPointerException! 2016-03-29
 			}
 		}
 		else{//Ingen leftnode och ingen parent
 			System.out.println("Skulle tro att inputsegmentet till findLeftneighbour är det minsta från början.");
 			return null;
-		}/*
-		
-		
-		if(n.left!=null)
-		
-		
-		if(n.left==null && n==n.parent.right){//En nod som kallas här är null med parent null.
-			return n.parent.segment;
 		}
-		else if(n.left == null && n == n.parent.left){
-			if(n.parent.parent==null){
-				return null;
-			}
-			else if(n.parent == n.parent.parent.right){
-				return n.parent.parent.segment;
-			}
-			else return null;
-		}
-		
-		else if(n.left != null){
-			return findLargest(n.left);
-		}
-		else return null;*/
 	}
 	
 	
 	//Denna är aktuell!
 	public Edge findLeftNeighbour(Edge segment, int sweep_y){
 		System.out.println("Public findLeftNeighbour är kallad.");
-		StatusNode node = newSearch(segment, sweep_y); //Returnerar null. Varför???
-		//System.out.println("Är sökresultatet efter vänstraste segmentet null?");
-		//System.out.println(node == null);
+		StatusNode node = newSearch(segment, sweep_y); //2016-03-31: Returnerar null. Varför???
+		System.out.println("Är sökresultatet efter vänstraste segmentet null?");
+		System.out.println(node == null);
 		return findLeftNeighbour(node);
 		
 		/*
@@ -1007,40 +1020,6 @@ public class StatusTree {
 		 * 3. Om left inte finns, om vi inte är ett högerbarn MEN parent är högerbarn --> returnera grandparent.
 		 * 4. Annars, returnera null
 		 */
-		/*if(node.left!=null){
-			return findLargest(node.left);
-		}
-		else if(node.parent!=null){
-			if(isRightChild(node)){
-				return node.parent.segment;
-			}
-			else if(node.parent.parent==null){
-				return null;
-			}
-			else if(node.parent == node.parent.parent.right){
-				return node.parent.parent;
-			}
-			else{
-				System.out.println("Noden är ett leftChild men har inga leftchilds, även dess parent är ett leftchild --> ingen vänstergranne.");
-				return null;
-			}
-		}
-		else{//Ingen leftnode och ingen parent
-			System.out.println("Segmentet har ingen vänstergranne.");
-			return null;
-		}
-		
-		/*if(node.left==null && (node.parent==null || isLeftChild(node))){//Can isLeftChild handle this call? Nullpointer?
-			System.out.println("The segment has no left neighbours.");
-			return null;
-		}
-		//Case 2: The segment is a right child, the parent is the neighbour.
-		if(node.parent!=null){
-			if(isRightChild(node)){
-				return node.parent.segment;
-			}
-		}
-		return newFindLeftNeighbour(node, segment);		*/
 	}
 
 	

@@ -17,6 +17,7 @@ public class AVLTree {
 
     public void insert(Endpoint eventpoint) {
         insert(root, eventpoint);
+        //2016-03-31: In the StatusTree, balanceTree(root) is now called here to fix that the tree fails to balance at root level.
     }
 
     private int height(Node node) {

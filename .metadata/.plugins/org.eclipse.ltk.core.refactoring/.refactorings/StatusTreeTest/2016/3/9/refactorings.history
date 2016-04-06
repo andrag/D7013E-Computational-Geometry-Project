@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename package &apos;status_tree_test&apos; to &apos;algorithm&apos;&#x0D;&#x0A;- Original project: &apos;StatusTreeTest&apos;&#x0D;&#x0A;- Original element: &apos;StatusTreeTest/src/status_tree_test&apos;&#x0D;&#x0A;- Renamed element: &apos;StatusTreeTest/src/algorithm&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" description="Rename package &apos;status_tree_test&apos;" flags="589830" hierarchical="false" id="org.eclipse.jdt.ui.rename.package" input="/src&lt;status_tree_test" name="algorithm" qualified="false" references="true" stamp="1456995538174" textual="false" version="1.0"/>
+</session>

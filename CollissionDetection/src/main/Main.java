@@ -15,11 +15,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		//Construct the GUI on the AWT Event Dispatch Thread (EDT)
-
-
 		//testa insert och search i StatusTree och AVLTree
-
-		
 		AVLTree eventQueueTest = new AVLTree();
 		StatusTree status = new StatusTree();
 
@@ -1709,6 +1705,9 @@ public class Main {
 		frame.pack();//Unnecessary when we have components?
 		frame.setVisible(true);
 	}
+	
+	
+	
 }
 
 
