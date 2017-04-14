@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import algorithm.*;
+import javax.swing.JTextArea;
 
-import algorithm.CollisionDetection;
+import algorithm.*;
 
 
 
@@ -34,6 +34,7 @@ public class Gui extends JPanel{
 	private JButton runButton;
 	
 	private static final long serialVersionUID = 1L;
+	
 		
 	
 		
@@ -48,6 +49,8 @@ public class Gui extends JPanel{
 		add(finishButton);
 		add(clearButton);
 		add(runButton);
+		
+		
 		
 		
 		addMouseListener(new MouseAdapter() {
@@ -75,7 +78,7 @@ public class Gui extends JPanel{
 			}
 		});	
 		
-		testingMethod();
+		//testingMethod();
 	}
 	
 	//Draw lines when the mouse is clicked
@@ -86,7 +89,8 @@ public class Gui extends JPanel{
 			
 			//If this is not the first line of the polygon
 			if(!firstPoint){
-				Edge newEdge = new Edge(latestpoint, point);//KANSKE MÅSTE GÖRA EN NY ENDPOINT FÖR VARJE EDGE PGA ATT DE SKA SÄTTAS IN SOM OLIKA I KÖN, MEN DÅ FALLERAR START/END-BASERADE LOOPAR.
+				int id = CollisionDetection.incrementAndGetEdgeID();
+				Edge newEdge = new Edge(latestpoint, point, id);//KANSKE MÅSTE GÖRA EN NY ENDPOINT FÖR VARJE EDGE PGA ATT DE SKA SÄTTAS IN SOM OLIKA I KÖN, MEN DÅ FALLERAR START/END-BASERADE LOOPAR.
 				latestpoint.setNextSeg(newEdge);
 				point.setPrevSeg(newEdge);	
 			}
@@ -118,15 +122,15 @@ public class Gui extends JPanel{
 	private void finishGeometry(){
 		finishButton.setEnabled(false);
 		polygonsFinished++;
-		
+		int id = CollisionDetection.incrementAndGetEdgeID();
 		if(polygonsFinished==1){
-			Edge lastEdge = new Edge(latestpoint, startpoint1);
+			Edge lastEdge = new Edge(latestpoint, startpoint1, id);
 			latestpoint.setNextSeg(lastEdge);
 			startpoint1.setPrevSeg(lastEdge);	
 		}
 		
 		else if(polygonsFinished==2){
-			Edge lastEdge = new Edge(latestpoint, startpoint2);
+			Edge lastEdge = new Edge(latestpoint, startpoint2, id);
 			latestpoint.setNextSeg(lastEdge);
 			startpoint2.setPrevSeg(lastEdge);
 			
@@ -231,7 +235,7 @@ public class Gui extends JPanel{
 				//Side 1
 				Endpoint a1 = new Endpoint(53, 400-270);
 				Endpoint a2 = new Endpoint(107, 400-133);
-				Edge a1a2 = new Edge(a1, a2);
+				Edge a1a2 = new Edge(a1, a2, CollisionDetection.incrementAndGetEdgeID());
 				a1.setNextSeg(a1a2);
 				a2.setPrevSeg(a1a2);
 				a1.setBelonging(Endpoint.POLYGON1);
@@ -239,48 +243,48 @@ public class Gui extends JPanel{
 
 				//Side 2
 				Endpoint a3 = new Endpoint(172, 400-136);
-				Edge a2a3 = new Edge(a2, a3);
+				Edge a2a3 = new Edge(a2, a3, CollisionDetection.incrementAndGetEdgeID());
 				a2.setNextSeg(a2a3);
 				a3.setPrevSeg(a2a3);
 				a3.setBelonging(Endpoint.POLYGON1);
 
 				//Side 3
 				Endpoint a4 = new Endpoint(148, 400-220);
-				Edge a3a4 = new Edge(a3, a4);
+				Edge a3a4 = new Edge(a3, a4, CollisionDetection.incrementAndGetEdgeID());
 				a3.setNextSeg(a3a4);
 				a4.setPrevSeg(a3a4);
 				a4.setBelonging(Endpoint.POLYGON1);
 
 				//Side 4
 				Endpoint a5 = new Endpoint(253, 400-231);
-				Edge a4a5 = new Edge(a4, a5);
+				Edge a4a5 = new Edge(a4, a5, CollisionDetection.incrementAndGetEdgeID());
 				a4.setNextSeg(a4a5);
 				a5.setPrevSeg(a4a5);
 				a5.setBelonging(Endpoint.POLYGON1);
 				
 				//Side 5
 				Endpoint a6 = new Endpoint(240, 400-129);
-				Edge a5a6 = new Edge(a5, a6);
+				Edge a5a6 = new Edge(a5, a6, CollisionDetection.incrementAndGetEdgeID());
 				a5.setNextSeg(a5a6);
 				a6.setPrevSeg(a5a6);
 				a6.setBelonging(Endpoint.POLYGON1);
 				
 				//Side 6
 				Endpoint a7 = new Endpoint(344, 400-141);
-				Edge a6a7 = new Edge(a6, a7);
+				Edge a6a7 = new Edge(a6, a7, CollisionDetection.incrementAndGetEdgeID());
 				a6.setNextSeg(a6a7);
 				a7.setPrevSeg(a6a7);
 				a7.setBelonging(Endpoint.POLYGON1);
 				
 				//Side 7
 				Endpoint a8 = new Endpoint(332, 400-292);
-				Edge a7a8 = new Edge(a7, a8);
+				Edge a7a8 = new Edge(a7, a8, CollisionDetection.incrementAndGetEdgeID());
 				a7.setNextSeg(a7a8);
 				a8.setPrevSeg(a7a8);
 				a8.setBelonging(Endpoint.POLYGON1);
 				
 				//Side 8
-				Edge a8a1 = new Edge(a8, a1);
+				Edge a8a1 = new Edge(a8, a1, CollisionDetection.incrementAndGetEdgeID());
 				a8.setNextSeg(a8a1);
 				a1.setPrevSeg(a8a1);
 				
@@ -289,7 +293,7 @@ public class Gui extends JPanel{
 				//Side 1
 				Endpoint b1 = new Endpoint(145, 400-304);
 				Endpoint b2 = new Endpoint(58, 400-190);
-				Edge b1b2 = new Edge(b1, b2);
+				Edge b1b2 = new Edge(b1, b2, CollisionDetection.incrementAndGetEdgeID());
 				b1.setNextSeg(b1b2);
 				b2.setPrevSeg(b1b2);
 				b1.setBelonging(Endpoint.POLYGON2);
@@ -297,13 +301,13 @@ public class Gui extends JPanel{
 
 				//Side 2
 				Endpoint b3 = new Endpoint(193, 400-192);
-				Edge b2b3 = new Edge(b2, b3);
+				Edge b2b3 = new Edge(b2, b3, CollisionDetection.incrementAndGetEdgeID());
 				b2.setNextSeg(b2b3);
 				b3.setPrevSeg(b2b3);
 				b3.setBelonging(Endpoint.POLYGON2);
 
 				//Side 3
-				Edge b3b1 = new Edge(b3, b1);
+				Edge b3b1 = new Edge(b3, b1, CollisionDetection.incrementAndGetEdgeID());
 				b3.setNextSeg(b3b1);
 				b1.setPrevSeg(b3b1);
 				

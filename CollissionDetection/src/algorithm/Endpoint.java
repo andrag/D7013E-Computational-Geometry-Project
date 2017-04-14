@@ -2,9 +2,10 @@ package algorithm;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Endpoint implements Comparable<Endpoint>{
+public class Endpoint implements Comparable<Endpoint>, Serializable{
 
 	private int x, y;
 	private int realY;

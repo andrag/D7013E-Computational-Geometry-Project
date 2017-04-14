@@ -85,13 +85,13 @@ public class StatusTree {
 				justInserted = node.left;
 			}
 			//2016-04-06: Should I just run balanceTree here instead of this? Check against original.
-			/*if (height(node.left) - height(node.right) == 2) { //left heavier. Detta kollas inte i roten?? Varför?
+			if (height(node.left) - height(node.right) == 2) { //left heavier. Detta kollas inte i roten?? Varför?
 				if (segment.getUpper().isToRightOrLeftOf(node.segment)<0) {
 					rotateRight(node);
 				} else {
 					rotateLeftThenRight(node);
 				}
-			}*///2016-04-06: Maybe needs to check for difference = -2 as well since null nodes gives height -1?
+			}//2016-04-06: Maybe needs to check for difference = -2 as well since null nodes gives height -1?
 		} else if (segment.getUpper().isToRightOrLeftOf(node.segment)>0) {
 			if (node.right != null) {
 				insert(node.right, segment);
@@ -100,13 +100,13 @@ public class StatusTree {
 				justInserted = node.right;
 			}
 
-			/*if (height(node.right) - height(node.left) == 2) { //right heavier
+			if (height(node.right) - height(node.left) == 2) { //right heavier
 				if (segment.getUpper().isToRightOrLeftOf(node.segment)>0)
 					rotateLeft(node);
 				else {
 					rotateRightThenLeft(node);
 				}
-			}*/
+			}
 		}
 
 		//Two segments have the same upper
@@ -138,13 +138,13 @@ public class StatusTree {
 			justInserted = node.left;
 		}
 
-		/*if (height(node.left) - height(node.right) == 2) { //left heavier
+		if (height(node.left) - height(node.right) == 2) { //left heavier
 			if (segment.getUpper().isToRightOrLeftOf(segment)<0) {
 				rotateRight(node);
 			} else {
 				rotateLeftThenRight(node);
 			}
-		}*/
+		}
 	}
 
 	//Used by insert
@@ -156,14 +156,14 @@ public class StatusTree {
 			justInserted = node.right;
 		}
 
-		/*if (height(node.right) - height(node.left) == 2) { //right heavier
+		if (height(node.right) - height(node.left) == 2) { //right heavier
 			//Lower might cause bugs later...Hope not.
 			if (segment.getLower().isToRightOrLeftOf(node.segment)>0)//This might be the fault. Byter ut getUpper().isToRightOrLeft till getLower().isTo etc
 				rotateLeft(node);
 			else {
 				rotateRightThenLeft(node);
 			}
-		}*/
+		}
 	}
 
 

@@ -1,6 +1,7 @@
 package algorithm;
 
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 import javax.swing.text.Segment;
 
@@ -12,11 +13,15 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	/**
 	 * 
 	 */
+	private Logger log;
 	private static final long serialVersionUID = 1L;
 	private AVLTree eventQueue;
-	private StatusTree status;
+	//private StatusTree status;
+	private StatusTreeSet status;
 	private ArrayList<Endpoint> eventPoints;
 	private ArrayList<Endpoint> allIntersections;
+	
+	private static int edgeID = 0;//For keeping track of all the edges
 
 	//Papa's got a brand new bag
 	//Guess these are replaced by arrays within the Endpoints themselves
@@ -24,6 +29,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	private ArrayList<Edge> intersectionInterior = new ArrayList<Edge>();
 
 	private boolean intersecting = false;
+	
+	private static int sweep_y; //Idea. Use this to get hold of sweep_y from inside Edge and/or Endpoint. Important. Should not be modified from anywhere other than this class.
 
 	public CollisionDetection(Endpoint startpoint1, Endpoint startpoint2){
 		eventPoints = new ArrayList<Endpoint>();
@@ -54,9 +61,16 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		eventQueue.traverseInOrder();
 		System.out.println("Is the queue empty?");
 		System.out.println(eventQueue.isEmpty());
+		
+		//SaveAndLoad.saveEventQueue(eventQueue);
+		String savedQueue = "Log_2017_04_02_20-24-51.ser";
+		eventQueue = SaveAndLoad.loadEventQueue(savedQueue);
 
 		//Initialize the empty status structure
-		status = new StatusTree();//Statusen ska ordnas på ett annat sätt. Ska ordnas efter hur segmenten ligger i x-riktningen där sweeplinjen befinner sig.
+		//status = new StatusTree();//Statusen ska ordnas på ett annat sätt. Ska ordnas efter hur segmenten ligger i x-riktningen där sweeplinjen befinner sig.
+		status = new StatusTreeSet();
+		
+		
 		//Gör en insertfunktion i StatusTree som tar ett y-värde som parameter. Jämför de olika nodernas x-värden i detta y-värde. Typ räta linjen?
 		while(eventQueue.root.left!=null || eventQueue.root.right!=null){//!eventQueue.isEmpty()
 			System.out.println("==================================================\n\nWhile loop entered.");
@@ -79,6 +93,36 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		handleLastPoint(eventQueue.root.getEventpoint());
 
 	}
+	
+	//2017-04-09
+	public void handleEventPoint2(Endpoint p){
+		/* 1. Update all Edges x-coordinates - this should automatically change the places of edges if we pass an intersection. Takes soe time though. 
+		 * 			For each p: update all current-x:es in the status, rearrange if necessary. 
+		 * 2. Check if p is already marked as an intersection, if true:
+		 * 		2.1 Switch their places in the status. If necessary. Since the status upholds sorting in x, and x keeps changing, the status should be maintained automatically.
+		 * 
+		 */
+		
+		//Step 1 - Update the current-X-coord for all segments in the status. It should be aligned with the sweep line
+		log.info("Handling a new event point. Update sweep line and current x-coordinate of each status segment.");
+		sweep_y = p.getRealY();
+		status.updateAllCurrentXCoords(sweep_y);
+		
+		//Step 2 - Check if p is a lower end point
+		if(p.isLower){
+			log.info("Handle event point: Lower");
+			int count = 0;
+			//Count how many lowers we need to delete
+			for(Edge e : p.getLowerTo()){
+				count++;
+			}
+			log.info("p is lower to " + count + " segments. Deleting them from the status.");
+			for(Edge e : p.getLowerTo()){
+				status.remove(e); //Delete all segments in a polygon that share p as their lower point. CompareTo in class Edge should find the Edges using id:s
+			}
+			
+		}
+	}
 
 	
 	public ArrayList<Endpoint> getIntersections(){
@@ -89,7 +133,6 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	// 1. Kolla om den insatta punkten sammanfaller med något element i statusen
 	// 2. Spara alla lower och intersections, typ - dessa är det som ska hittas
 	public void handleEventPoint(Endpoint p){ 
-
 		//Ny check för lowers 2015-05-12. Sätt den innan uppers-checken istället. 
 		//Ville att uppers skulle kollas först för att det ska upptäckas om en upper från en polygon korsar en lower från en annan.
 		//Om två punkter i två polygoner sammanstrålar här så händer följande:
@@ -555,10 +598,12 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	}
 
 
-
-
-
-
-
-
+	public int getSweepY(){
+		return sweep_y;
+	}
+	
+	public static int incrementAndGetEdgeID(){
+		edgeID++;
+		return edgeID;
+	}
 }

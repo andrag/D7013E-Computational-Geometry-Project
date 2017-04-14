@@ -17,6 +17,10 @@ public class StatusTree {
 	private StatusNode tempNewRoot = null;
 	public boolean isRoot = false;
 
+	
+	private StatusNode justInserted;//Added 2016-04-06 to fix balancing from the bottom and up
+	
+	
 	public void insert(Edge data) {
 		insert(root, data);
 		
@@ -46,8 +50,8 @@ public class StatusTree {
 			}
 		}
 		reHeight(root);*/
-		balanceTree(root);//BalanceTree should be run from bottom up. Could cause problem to do it at root level all the time.
-		
+		//balanceTree(root);//2016-04-06: Changed this to balance bottom up, from the justInserted node.
+		balanceTree(justInserted);
 		
 	}
 
@@ -69,6 +73,7 @@ public class StatusTree {
 	private void insert(StatusNode node, Edge segment) {
 		if (root == null) {
 			root = new StatusNode(segment, null);
+			justInserted = root;
 			return;
 		}
 
@@ -77,8 +82,11 @@ public class StatusTree {
 				insert(node.left, segment);
 			} else {
 				node.left = new StatusNode(segment, node);
+				justInserted = node.left;
 			}
 
+			//Outcommented 2016-04-06 to use only balanceTree(justInserted) after entire insert operation.
+			//Put back into ation again on same date since they were there from the original. Just to check.
 			if (height(node.left) - height(node.right) == 2) { //left heavier. Detta kollas inte i roten?? Varför?
 				if (segment.getUpper().isToRightOrLeftOf(node.segment)<0) {
 					rotateRight(node);
@@ -91,8 +99,10 @@ public class StatusTree {
 				insert(node.right, segment);
 			} else {
 				node.right = new StatusNode(segment, node);
+				justInserted = node.right;
 			}
-
+			//Outcommented 2016-04-06 to use only balanceTree(justInserted) after entire insert operation.
+			//Put back into ation again on same date since they were there from the original. Just to check.
 			if (height(node.right) - height(node.left) == 2) { //right heavier
 				if (segment.getUpper().isToRightOrLeftOf(node.segment)>0)
 					rotateLeft(node);
@@ -128,8 +138,10 @@ public class StatusTree {
 			insert(node.left, segment);
 		} else {
 			node.left = new StatusNode(segment, node);
+			justInserted = node.left;
 		}
-
+		//Outcommented 2016-04-06 to use only balanceTree(justInserted) after entire insert operation.
+		//Put back into ation again on same date since they were there from the original. Just to check.
 		if (height(node.left) - height(node.right) == 2) { //left heavier
 			if (segment.getUpper().isToRightOrLeftOf(segment)<0) {
 				rotateRight(node);
@@ -145,8 +157,10 @@ public class StatusTree {
 			insert(node.right, segment);
 		} else {
 			node.right = new StatusNode(segment, node);
+			justInserted = node.right;
 		}
-
+		//Outcommented 2016-04-06 to use only balanceTree(justInserted) after entire insert operation.
+		//Put back into ation again on same date since they were there from the original. Just to check.
 		if (height(node.right) - height(node.left) == 2) { //right heavier
 			//Lower might cause bugs later...Hope not.
 			if (segment.getLower().isToRightOrLeftOf(node.segment)>0)//This might be the fault. Byter ut getUpper().isToRightOrLeft till getLower().isTo etc
@@ -235,11 +249,13 @@ public class StatusTree {
 		if (target == null) return false;
 		
 		target = deleteNode(target, sweep_y);
-		if(target!=root){
-			balanceTree(target.parent);//Must balance root?
+		balanceTree(root);
+		/*if(target!=root){
+			balanceTree(target.parent);//2016-04-06: Don't work with root.
 			isRoot = false;
-		}
-		isRoot = false;//Beleive this must be done for all caes.
+			//2016-04-06: Could try to run balanceTree from a node at the bottom of the tree.
+		}*/
+		isRoot = false;//Beleive this must be done for all cases.
 		System.out.println("The status tree looks like this after deletion: ");
 		traverseInOrder();
 		
@@ -259,6 +275,8 @@ public class StatusTree {
 				//System.out.println("No. Unhook it from its parents right-pointer.");
 				target.parent.right = null;
 			}
+			balanceTree(target.parent);
+			
 		} else if ((target.left == null ^ target.right == null) && target!=root) { //exact 1 child (Laga trädet, hantera root case!)
 			StatusNode nonNullChild = target.left == null ? target.right : target.left; 
 			//System.out.println("No. It has one child. Unhook it from its parent and attach its child instead.");
@@ -267,6 +285,8 @@ public class StatusTree {
 			} else {
 				target.parent.setRightChild(nonNullChild);
 			}
+			balanceTree(nonNullChild);
+			
 		} else if(target!=root){//2 children
 			//System.out.println("No. It has two children. Set its data to the immediatepred in orders data. Do this recursively in the whole tree.");
 			StatusNode immediatePredInOrder = immediatePredInOrder(target);
@@ -329,12 +349,15 @@ public class StatusTree {
 							if(root.right != null){//Added 2015-05-12
 								root.right.parent = root;
 							}
+							balanceTree(root);//2016-04-06: This should work here since there is only one case where the newRootNode is a left child in the left sub tree
 						}
 						else if(isRightChild(newRootNode)){//There are nodes in between the root and its left neighbour
 							//Detatch the left neighbour
+							StatusNode parent = newRootNode.parent;//Added 2016-04-06
 							newRootNode.parent.right = newRootNode.left;
 							if(newRootNode.left!=null){
 								newRootNode.left.parent=newRootNode.parent;
+								newRootNode.parent.right = newRootNode.left;//Added 2016-04-06
 							}
 							//Move to root position
 							newRootNode.left = root.left;
@@ -342,6 +365,8 @@ public class StatusTree {
 							newRootNode.parent = null;
 							root = newRootNode;
 							
+							
+							//These checks are probably unnecessary. Unless the new root is the last node left in the tree.
 							if(root.left != null){//Added 2015-05-12
 								root.left.parent = root;
 							}
@@ -349,6 +374,9 @@ public class StatusTree {
 							if(root.right != null){//Added 2015-05-12
 								root.right.parent = root;
 							}
+							
+							if(parent.left != null) balanceTree(parent.left);//Added 2016-04-06
+							else balanceTree(parent);
 						}
 						
 						//Take care of the former roots childrens parentpointer so it doesn't point towards the old root.
@@ -372,12 +400,17 @@ public class StatusTree {
 						if(root.left!=null){
 							root.left.parent = root;
 						}
+						
+						balanceTree(root);//2016-04-06: No need for rebalancing a tree with just two nodes in it. Could erase this.
 					}
 					else if(isLeftChild(newRootNode)){//There are nodes in between the root and its left neighbour
 						//Detatch the left neighbour
-						newRootNode.parent.left = newRootNode.left;
+						StatusNode parent = newRootNode.parent;
+						
+						newRootNode.parent.left = newRootNode.left;//2016-04-06: Left should be null if newRootNode is a left child that is biggest in the right sub tree.
 						if(newRootNode.right!=null){
 							newRootNode.right.parent=newRootNode.parent;
+							newRootNode.parent.left = newRootNode.right;//Added 2016-04-06
 						}
 						//Move to root position
 						newRootNode.left = root.left;
@@ -393,10 +426,10 @@ public class StatusTree {
 							root.right.parent = root;
 						}
 						
+						if(parent.left != null)balanceTree(parent.left);
+						else balanceTree(parent);
 					}
-					
 				}
-				
 			}
 			
 			else if((root.left == null ^ root.right == null)){//Exactly 1 child
@@ -404,7 +437,7 @@ public class StatusTree {
 				StatusNode nonNullChild = root.left == null ? root.right : root.left;
 				nonNullChild.parent=null;
 				root = nonNullChild;
-				
+				balanceTree(root);//2016-04-06
 				
 				/*if(isLeftChild(nonNullChild)){
 					nonNullChild.parent=null;
@@ -414,9 +447,9 @@ public class StatusTree {
 					non
 				}*/
 			}
-			reHeight(root);//Don't think you can run this too many times.
-			balanceTree(root);
-			target = root;
+			//reHeight(root);//Don't think you can run this too many times... 
+			//balanceTree(root);//2016-04-06... Why? Pointless at root?
+			//target = root;//Removed 2016-04-06
 			/*
 			if((target.left == null ^ target.right == null)){//Roten har exakt ett child
 				StatusNode nonNullChild = target.left == null ? target.right : target.left; 
@@ -430,11 +463,13 @@ public class StatusTree {
 				}
 			}*/
 		}
-		System.out.println("Reheight the parent.");
-		if(target != root){//Funkar ej. inte roten längre.
+		//System.out.println("Reheight the parent.");
+		
+		//2016-04-06: If the root was removed, target will be the old root and reHeighting that gives us a nullpointer exception!
+		/*if(target != root){//Funkar ej. inte roten längre.
 			reHeight(target.parent);
 			//isRoot = false;//Görs i public deleteNode()
-		}
+		}*/
 		return target;
 	}
 
@@ -471,9 +506,9 @@ public class StatusTree {
 	}
 
 	private int calDifference(StatusNode node) {
-		int rightHeight = height(node.right);
+		int rightHeight = height(node.right);//What happens when node.right is null? height = -1?
 		int leftHeight = height(node.left);
-		return rightHeight - leftHeight;
+		return rightHeight - leftHeight;//Then this is 0
 	}
 
 	private void balanceTree(StatusNode node) {

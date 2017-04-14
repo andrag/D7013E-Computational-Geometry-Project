@@ -2,40 +2,29 @@ package algorithm;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 //import datastructures.Edge;
 
-public class Edge implements Comparable<Edge>{
+public class Edge implements Comparable<Edge>, Serializable{
 
 	private Endpoint start, end;
 	private Endpoint upper, lower;
+	//Added 2017-04-09
+	private int id; //Use this to find the correct edge in the status tree
+	public int current_X; //Use this for comparisons in the Status tree
 	
 	
-	public Edge(Endpoint start, Endpoint end){
-		//start.setUpper();//Detta ska sättas i CollissionDetection
-		//end.setLower();
-		//start.setEdge(this);
-		//end.setEdge(this);//Ska båda sättas?
-		
-		//Bör inte göra ny endpoint här. Bara assigna.
-		//this.start = new Endpoint(start.getX(), start.getY());
-		//this.end = new Endpoint(end.getX(), end.getY());
-		
+	public Edge(Endpoint start, Endpoint end, int id){ //Lägg till id här
 		this.start = start;
 		this.end = end;
 		setUpperAndLower();
 		
+		current_X = upper.getX();
+		this.id = id;
 	}
 	
-	/*
-	public Endpoint getUpper(){
-		return upper;
-	}
-	
-	public Endpoint getLower(){
-		return lower;
-	}*/
 	
 	public Endpoint getStart(){
 		return start;
@@ -95,6 +84,11 @@ public class Edge implements Comparable<Edge>{
 		upper = newUpper;
 	}
 	
+	public void updateXCoord(int sweep_y){
+		current_X = currentXCoord(sweep_y);
+		
+	}
+	
 	//Denna returnerar fel så in i bomben!! Används ej mer.
 	//Ska ha korrekt matte! Bör jag lägga till constraints för endpointsen i segmenten???
 	
@@ -106,7 +100,7 @@ public class Edge implements Comparable<Edge>{
 	/*Test with returning double
 	 * 
 	 */
-	public double currentXCoord(int sweep_y){
+	public int currentXCoord(int sweep_y){
 		//System.out.println("Inne i currentXCoord");
 		//If a vertical segment, it's x-choordinate is always the same.
 		if(this.getUpper().getX()==this.getLower().getX() && (sweep_y <= upper.getRealY() && sweep_y >= lower.getRealY())){
@@ -157,24 +151,63 @@ public class Edge implements Comparable<Edge>{
 		else return false;
 	}
 
-	//Classic compare. Does this work??
+	/**
+	 * Compares the x-coordinate of this Edge to the one provided, at the current location of the sweep-line over that sweeps over the y-axis.
+	 * @param: The Edge to compare this Edge to.
+	 * @return: -1 ,0 or 1 if this Edge has a smaller x-coordinate value, equal or larger than the provided Edges' current x-coordinate.
+	 * 
+	 * There are many cases, where the intersecting ones are most complex
+	 * 		Case 1: x1 < x2 -> return -1
+	 * 		Case 2: x1 > x2 -> return 1
+	 * 		Case 3: x1 == x2
+	 * 					3.1 if they are uppers to many
+	 * 					or intersection -> compare their lowers and return -1, 0 or 1
+	 * 					3.2 else if they are lower point 
+	 * 							-> This should not happen because all edges should have been erased before
+	 * 							-> p might be a lower and an upper but this is an else if, meaning that the upper-if above will take it instead
+	 * 
+	 * 
+	 * 		All cases ()
+	 * 				- uppers to many
+	 * 				- upper to many and an intersection
+	 * 				- upper to one and an intersection
+	 * 				- etc... skip these for now
+	 */				
 	@Override
 	public int compareTo(Edge o) {
-		if(upper.compareTo(o.getUpper())==0 && lower.compareTo(o.getLower())==0){
-			return 0;
+		//Case 1
+		if(current_X < o.current_X){
+			return -1;
 		}
-		else return 2;
-		
-		
-		//Compare to för edges i status
-		/*
-		 * Kolla om nuvarande y ger olika x --> sortera efter x bakvänt
-		 * Kolla om endast nuvarande y är lika --> sortera efter riktningen direkt under sweep line
-		 * Kolla om upper och lower är lika --> om de är från olika polygoner ska deta registreras.
-		 * Kolla om start och end är lika. Equal
-		 * 
-		 */// TODO Auto-generated method stub
+		//Case 2
+		else if(current_X > o.current_X){
+			return 1;
+		}
+		//Case 3
+		else if(current_X == o.current_X){
+			
+			//Use the edgeID to see if we have the Edges are exactly the same
+			if(this.id == o.id){ //Consistent with equals??
+				return 0;
+			}
+			
+			//We are probably handling an intersection or an upper. Note that an upper could potentially be an upper point to more than two edges. I guess.
+			//Since this funtion is only handling two Edges, just order them according to their lower points, or their next points when decreasing sweep_y by 1 (primitive but might work).
+			if(isToRightOrLeftOf(o) != 0){
+				//The current point could be an upper to many or an intersection
+				//Check the lowers and order them from those points
+				return isToRightOrLeftOf(o); //<------------------------------------This method should be tested again
+			}
+			else{
+				//The edges are alike but have different id:s
+				System.out.println("CompareTo between edge " + id + " and edge " + o.id + " claims to be equal.");
+				return 0;
+			}
+		}
+		System.out.println("CompareTo in edge failed to find a suitable case when comparing Edge " + id + " and Edge " + o.id);
+		return -2;
 	}
+	
 	
 	/* Metod för att jämföra ett eftersökt segment med ett befintligt i en nod.
 	 * This är eftersökta segmentet
@@ -288,7 +321,7 @@ public class Edge implements Comparable<Edge>{
 				return 1;
 			}
 					
-			else return 0;//They are on a line(Might not work if there is to diffferent segments on a line.)
+			else return 0;//They are on a line(Might not work if there is to different segments on a line.)
 		}
 		
 		
@@ -344,6 +377,9 @@ public class Edge implements Comparable<Edge>{
 		//http://www.ahristov.com/tutorial/geometry-games/intersection-segments.html
 		//This method is for spotting an intersection between two segments. This intersection
 		//shall later be inserted as a new eventPoint in the queue
+		
+		//2016-04-06: This seems to be in use but not handling vertical segments like it should.
+		//Test performed:
 		public Endpoint doIntersect(Edge segment) {
 				    int x1 = upper.getX();
 				    //int y1 = upper.getRealY();
@@ -366,6 +402,13 @@ public class Edge implements Comparable<Edge>{
 				    //Point calculation
 				    int xi = ((x3-x4)*(x1*y2-y1*x2)-(x1-x2)*(x3*y4-y3*x4))/d;
 				    int yi = ((y3-y4)*(x1*y2-y1*x2)-(y1-y2)*(x3*y4-y3*x4))/d;
+				    
+				  //Added 2016-04-06: Check if any of the lines are vertical
+			        if(x1 == x2 || x3 == x4){
+			            //2016-04-06: Check if the intersection point lies outside any of the segment in the y direction
+			            if(yi < Math.min(y1, y2) || yi > Math.max(y1, y2)) return null;
+			            if(yi < Math.min(y3, y4) || yi > Math.max(y3, y4)) return null;
+			        }
 				    
 				    //Check if intersection lies outside the segments endpoints
 				    Endpoint p = new Endpoint(xi,yi);

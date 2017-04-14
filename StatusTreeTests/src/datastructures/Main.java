@@ -24,7 +24,8 @@ public class Main {
 		//test2();//Not solved
 		
 		//2016-04-06
-		test3();
+		//test3();//Maybe solved
+		testDoIntersect();
 	}
 	
 	
@@ -506,4 +507,68 @@ public class Main {
 	
 	
 
-}}
+}
+	
+	/*2016-04-06: Test the intersection method for vertical case. Might be the cause of failing intersection points.
+	 * 
+	 */
+	public static void testDoIntersect(){
+		Endpoint a1 = new Endpoint(117, 400-292);
+		Endpoint a2 = new Endpoint(19, 400-165);
+		Edge a = new Edge(a1,  a2);
+		
+		Endpoint b1 = new Endpoint(93, 400 - 246);
+		Endpoint b2 = new Endpoint(93, 400-213);
+		Edge b = new Edge(b1, b2);
+		
+		Endpoint intersection = doIntersect(a, b);
+		if(intersection != null){
+			System.out.println("doIntersect calculates intersection to be at: ("+intersection.getX()+", "+intersection.getRealY()+")");
+		}
+		else System.out.println("doIntersects recognize that the intersection lies outside the segments interval. Null! :)");
+		
+	}
+	
+	
+	public static Endpoint doIntersect(Edge segment1, Edge segment2) {
+	    int x1 = segment1.getUpper().getX();
+	    //int y1 = upper.getRealY();
+	    int y1 = segment1.getUpper().getY();//Måste använda getY() och inte realY() här.
+	    int x2 = segment1.getLower().getX();
+	    //int y2 = lower.getRealY();
+	    int y2 = segment1.getLower().getY();
+	    
+	    int x3 = segment2.getUpper().getX();
+	    //int y3 = segment.getUpper().getRealY();
+	    int y3 = segment2.getUpper().getY();
+	    int x4 = segment2.getLower().getX();
+	    //int y4 = segment.getLower().getRealY();
+	    int y4 = segment2.getLower().getY();
+
+
+		int d = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4); //Denominator determinant for point calculation
+	    if (d == 0) return null;//Lines are parallell
+	    
+	    //Point calculation
+	    int xi = ((x3-x4)*(x1*y2-y1*x2)-(x1-x2)*(x3*y4-y3*x4))/d;
+	    int yi = ((y3-y4)*(x1*y2-y1*x2)-(y1-y2)*(x3*y4-y3*x4))/d;
+	    
+	    
+	    //Check if any of the lines are vertical
+        if(x1 == x2 || x3 == x4){
+            //Check if the intersection point lies outside any of the segment in the y direction
+            if(yi < Math.min(y1, y2) || yi > Math.max(y1, y2)) return null;
+            if(yi < Math.min(y3, y4) || yi > Math.max(y3, y4)) return null;
+        }
+	    
+	    //Check if intersection lies outside the segments endpoints
+	    Endpoint p = new Endpoint(xi,yi);
+	    if (xi < Math.min(x1,x2) || xi > Math.max(x1,x2)) return null;
+	    if (xi < Math.min(x3,x4) || xi > Math.max(x3,x4)) return null;
+	    
+	    
+	    
+	    return p;
+	  }
+	
+	}

@@ -12,8 +12,12 @@ import datastructures.*;
 
 
 public class Main {
+	
+	public static void main(String[] args){
+		StatusTreeSet.statusTreeSet();
+	}
 
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		//Construct the GUI on the AWT Event Dispatch Thread (EDT)
 		//testa insert och search i StatusTree och AVLTree
 		AVLTree eventQueueTest = new AVLTree();
@@ -1688,23 +1692,25 @@ public class Main {
 
 
 
-	}
+	/*}
 
 	private static void createGUI(){
 		JFrame frame = new JFrame("Computational geometry project");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+		
 		//Painting panel
 		final Gui paintArea = new Gui(); 
 		frame.add(paintArea);
 
 		//Controls
-		JPanel controlPanel = new JPanel();
-		frame.add(controlPanel, BorderLayout.SOUTH);
-
+		/*JPanel controlPanel = new JPanel();
+		frame.add(controlPanel, BorderLayout.SOUTH);*/
+		
+		
+/*
 		frame.pack();//Unnecessary when we have components?
 		frame.setVisible(true);
-	}
+	}*/
 	
 	
 	

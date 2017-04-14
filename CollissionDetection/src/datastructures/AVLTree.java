@@ -1,5 +1,7 @@
 package datastructures;
 
+import java.io.Serializable;
+
 import algorithm.Endpoint;
 
 //import avl_tree.AVLTree;
@@ -11,7 +13,11 @@ import algorithm.Endpoint;
  */
 
 
-public class AVLTree {
+public class AVLTree implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int counter = 0;
     public Node root = null;
 
