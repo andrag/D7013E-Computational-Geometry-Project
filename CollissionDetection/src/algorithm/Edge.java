@@ -7,13 +7,15 @@ import java.util.ArrayList;
 
 //import datastructures.Edge;
 
-public class Edge implements Comparable<Edge>, Serializable{
+public class Edge implements Comparable<Edge>, Serializable{//Last one only needed for storing?
 
 	private Endpoint start, end;
 	private Endpoint upper, lower;
 	//Added 2017-04-09
-	private int id; //Use this to find the correct edge in the status tree
+	public int id; //Use this to find the correct edge in the status tree
 	public int current_X; //Use this for comparisons in the Status tree
+	public int sweep_Y;
+	public boolean isHorizontal;
 	
 	
 	public Edge(Endpoint start, Endpoint end, int id){ //Lägg till id här
@@ -23,6 +25,8 @@ public class Edge implements Comparable<Edge>, Serializable{
 		
 		current_X = upper.getX();
 		this.id = id;
+		
+		if(start.getY() == end.getY()) isHorizontal = true;
 	}
 	
 	
@@ -84,12 +88,17 @@ public class Edge implements Comparable<Edge>, Serializable{
 		upper = newUpper;
 	}
 	
+	/**
+	 * Get the x-coordinate of this line segment from the current y-coordinate of the sweep line
+	 * @param sweep_y
+	 * @return current x-coordinate
+	 */
 	public void updateXCoord(int sweep_y){
 		current_X = currentXCoord(sweep_y);
 		
 	}
 	
-	//Denna returnerar fel så in i bomben!! Används ej mer.
+	//Denna returnerar fel så in i bomben!! Används ej mer. <--------------------------------------------TA REDA PÅ VILKEN SOM SKA ANVÄNDAS!
 	//Ska ha korrekt matte! Bör jag lägga till constraints för endpointsen i segmenten???
 	
 	
@@ -156,8 +165,40 @@ public class Edge implements Comparable<Edge>, Serializable{
 	 * @param: The Edge to compare this Edge to.
 	 * @return: -1 ,0 or 1 if this Edge has a smaller x-coordinate value, equal or larger than the provided Edges' current x-coordinate.
 	 * 
+	 * NB! current_X and sweep_Y must be updated in the Edge object that is passed to this method beforehand!!
+	 * 
 	 * There are many cases, where the intersecting ones are most complex
-	 * 		Case 1: x1 < x2 -> return -1
+	 * 		
+	 * 		1. Adding a new segment, could be upper to one or many or be an intersection (intersection = upper to many when they arrive as new points)
+	 * 		if(currentX < o.current_X) return -1
+	 * 		else if(current_X > o.current_X) return 1
+	 * 		else if(current_X == o.currentX)
+	 * 			if(The segments are the same. Id or just overlapping + belonging?) return 0
+	 * 			else if(this to left of o) return -1
+	 * 			else if(this to right of o) return 1
+	 * 			else do some trace
+	 * 
+	 * 
+	 * 		2. Searching for a segment - same as above
+	 * 
+	 * 		3. Deleting a segment - same as above
+	 * 			NB! A segment gets deleted due to a lower eventpoint is encountered or an intersection is handled. 
+	 * 			
+	 * 		Problems with current_X
+	 * 			1. Using doubles in calculations might lead to rounding errors and misses. Should probably use linear algebra here. Compare one current x with an entire edge.
+	 * 			2. The best way would be to use the current x only in the segment that is input to the tree, not in the segments that lies within the tree. This way we avoid having to update the entire tree.
+	 * 			
+	 * 			Example:
+	 * 				1. Adding a new segment:
+	 * 					newSeg.updateX-coord();
+	 * 					status.add(newSeg); <----------Compare to now compares like this: in an edge e: if(this isToRightOf(newSeg.current_X())) return -1. Easier to find a segment then too!
+	 * 	
+	 * 		
+	 * 		
+	 * 
+	 * 
+	 * 
+	 * Case 1: x1 < x2 -> return -1
 	 * 		Case 2: x1 > x2 -> return 1
 	 * 		Case 3: x1 == x2
 	 * 					3.1 if they are uppers to many
@@ -172,41 +213,133 @@ public class Edge implements Comparable<Edge>, Serializable{
 	 * 				- upper to many and an intersection
 	 * 				- upper to one and an intersection
 	 * 				- etc... skip these for now
+	 * 
+	 *  NB! current_X of this edge and the one we compare to need to be updated before comparing.
+	 *  How to avoid unnecessary updates?
 	 */				
 	@Override
 	public int compareTo(Edge o) {
-		//Case 1
-		if(current_X < o.current_X){
+		//1. Compare o.current_X to this.segment
+		//if(o.x is to left) return -1
+		//if(o.x is to right) return 1
+		//if(o.x is on the line)
+			//if(same element (parallell)) (check endpoints, ids, belonings, whatever) return 0
+			//else(we have a case where two segments intersect but are not the same. Might be of different lengths.) return -1 as default and print a trace_info
+		if(comparePointToEdge(o.current_X, o.sweep_Y) < 0){
+			System.out.println("Segment o is to the left(?), return -1");
 			return -1;
 		}
-		//Case 2
-		else if(current_X > o.current_X){
+		else if(comparePointToEdge(o.current_X, o.sweep_Y) > 0) {
+			System.out.println("Segment o is to the right(?), return 1");
 			return 1;
 		}
-		//Case 3
-		else if(current_X == o.current_X){
-			
-			//Use the edgeID to see if we have the Edges are exactly the same
-			if(this.id == o.id){ //Consistent with equals??
+		else
+		{
+			/*The point is on the line. We have the following possible scenarios:
+			 * 1. The segments are the same -> return 0
+			 * 2. We insert a new segment, this has same upper as a present segment (or they might be intersections. Complex scenario, skip for now. I beleive that scenario is already caught in CollisionDetection) -> compare their lowers to know where to go next
+			 * 3. We search for a segment to delete and have found a segment that has the same lower as the one we want to delete. -> compare their uppers to know what to return.
+			 * */
+			//1.
+			if((lower.isEqualTo(o.lower)) && (upper.isEqualTo(o.getUpper())))// && (upper.getBelonging() == o.upper.getBelonging())) //Need more checks? Id?`IDs must then follow along each segments wherever they may reside.
+			{
+				//The segments are the same
+				System.out.println("compareTo found a segment that matches o in the treeSet");
 				return 0;
 			}
-			
-			//We are probably handling an intersection or an upper. Note that an upper could potentially be an upper point to more than two edges. I guess.
-			//Since this funtion is only handling two Edges, just order them according to their lower points, or their next points when decreasing sweep_y by 1 (primitive but might work).
-			if(isToRightOrLeftOf(o) != 0){
-				//The current point could be an upper to many or an intersection
-				//Check the lowers and order them from those points
-				return isToRightOrLeftOf(o); //<------------------------------------This method should be tested again
-			}
-			else{
-				//The edges are alike but have different id:s
-				System.out.println("CompareTo between edge " + id + " and edge " + o.id + " claims to be equal.");
+			//2. They share the same upper but are different segments
+			else if(upper.upperToArrayContains(o))
+			{
+				//Compare their lower endpoints
+				if(comparePointToEdge(o.getLower().getX(), o.getLower().getRealY()) < 0) {
+					System.out.println("Segment o is to the left(?), return -1");
+					return -1;
+				}
+				else if(comparePointToEdge(o.getLower().getX(), o.getLower().getRealY()) > 0) {
+					System.out.println("Segment o is to the right(?), return 1");
+					return 1;
+				}
+				System.out.println("Edge.compareTo() failed (1)");
 				return 0;
 			}
+			//3. They share the same lower but are different segments
+			else if(lower.lowerToArrayContains(o))
+			{
+				System.out.println("Segment o has the same lower as another segment");
+				
+				// -> compare their upper endpoints
+				if(comparePointToEdge(o.getUpper().getX(), o.getUpper().getRealY()) < 0) {
+					System.out.println("o:s upper is to the left of the other segment, return -1");
+					return -1;
+				}
+				else if(comparePointToEdge(o.getUpper().getX(), o.getUpper().getRealY()) > 0) {
+					System.out.println("o:s upper is to the right of the other segment, return 1");
+					return 1;
+				}
+				System.out.println("Edge.compareTo() failed (2)");
+				return 0;
+			}
+			else
+			{
+				//The current point of segment o is on the line of THIS segment
+				//It is not the same segment
+				//It is not the upper to THIS segment
+				//It is the LOWER to this segment (spelar ingen roll, skulle kunna vara korsat.) -> lösning...?
+				//Lösning: Testa current point of THIS segment against the entire o segment
+				
+				//Should update current x and sweep y of THIS segment here. Still just a test so don't need it. (Should be updated outside anyway.)
+				int comparison = o.comparePointToEdge(current_X, sweep_Y);
+				if(comparison > 0) return -1;
+				else if(comparison < 0) return 1;
+				else System.out.println("SOMETHING IS WRONG!");
+				System.out.println("Edge.compareTo() FAILED REALLY BAAAAAD (2)");
+				return 0;//Problem with return statements in this method. Cases that should not happen return 0. That is bad.
+			}
+			/*else
+			{
+				System.out.println("Edge.compareTo() FAILED REALLY BAAAAAD (2)");
+				return 0;//Problem with return statements in this method. Cases that should not happen return 0. That is bad.
+			}*/
 		}
-		System.out.println("CompareTo in edge failed to find a suitable case when comparing Edge " + id + " and Edge " + o.id);
-		return -2;
 	}
+	
+	/**
+	 * Created 2017-06-03
+	 * Purpose: Compare a point to a segment to see which side it lies on
+	 * Needs: unit test
+	 * @param p
+	 * @return
+	 */
+	private int comparePointToEdge(int p_x, int p_y) { //Risk with current x: it has to be calculated using doubles and then cast to int. Might miss intersections... but, intersections might already be caught??
+		int x1 = upper.getX();
+		int y1 = upper.getRealY();
+		
+		int x2 = lower.getX();
+		int y2 = lower.getRealY();
+		
+		double d = (p_x - x1) * (y2 - y1) - (p_y - y1) * (x2 - x1);
+		
+		if(d < 0) return -1;
+		else if(d > 0) return 1;
+		else return 0;		
+	}
+	
+	private boolean upperToSegment(Edge segment){
+		if(upper.isUpperTo.contains(segment)) //Does this thing work with custom objects?
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean lowerToSegment(Edge segment){
+		if(lower.isLowerTo.contains(segment))
+		{
+			return true;
+		}
+		return false;
+	}
+	
 	
 	
 	/* Metod för att jämföra ett eftersökt segment med ett befintligt i en nod.
@@ -314,7 +447,7 @@ public class Edge implements Comparable<Edge>, Serializable{
 			//Determinant stuff
 			int det1 = (segment.getLower().getX()-segment.getUpper().getX())*(getUpper().getRealY()-segment.getUpper().getRealY()) - (segment.getLower().getRealY()-segment.getUpper().getRealY())*(getUpper().getX()-segment.getUpper().getX());
 			int det2 = (segment.getLower().getX()-segment.getUpper().getX())*(getLower().getRealY()-segment.getUpper().getRealY()) - (segment.getLower().getRealY()-segment.getUpper().getRealY())*(getLower().getX()-segment.getUpper().getX());
-			if(det1<0 || det1==0 && det2<0){
+			if(det1<0 || det1==0 && det2<0){//Be careful with the grouping here. This mght be wrong.
 				return -1;
 			}
 			else if(det1>0 || det1 == 0 && det2>0){//Kolla både upper och lower om upper skulle vara samma för båda

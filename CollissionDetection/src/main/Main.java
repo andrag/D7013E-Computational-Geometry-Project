@@ -10,17 +10,20 @@ import javax.swing.SwingUtilities;
 import algorithm.*;
 import datastructures.*;
 
+import org.junit.Assert;
+
 
 public class Main {
 	
-	public static void main(String[] args){
-		StatusTreeSet.statusTreeSet();
-	}
+	/*public static void main(String[] args){
+		//StatusTreeSet.statusTreeSet();
+	}*/
 
-	/*public static void main(String[] args) {
+	public static void main(String[] args) {
+		//============================================CODE FOR RUNNING THE PROGRAM=========================================
 		//Construct the GUI on the AWT Event Dispatch Thread (EDT)
 		//testa insert och search i StatusTree och AVLTree
-		AVLTree eventQueueTest = new AVLTree();
+		/*AVLTree eventQueueTest = new AVLTree();
 		StatusTree status = new StatusTree();
 
 		
@@ -28,7 +31,13 @@ public class Main {
 			public void run() {
 				createGUI();
 			}
-		});
+		});*/
+		
+		
+		
+		//==================================================TEST CODE==========================================================
+		compareToTest();
+		
 		
 		//========================================Fel 7 - Nullpointer - Mer avancerad polygon===========================================================
 		//2015-05-17
@@ -1692,7 +1701,7 @@ public class Main {
 
 
 
-	/*}
+	}
 
 	private static void createGUI(){
 		JFrame frame = new JFrame("Computational geometry project");
@@ -1703,14 +1712,179 @@ public class Main {
 		frame.add(paintArea);
 
 		//Controls
-		/*JPanel controlPanel = new JPanel();
-		frame.add(controlPanel, BorderLayout.SOUTH);*/
+		JPanel controlPanel = new JPanel();
+		frame.add(controlPanel, BorderLayout.SOUTH);
 		
 		
-/*
+
 		frame.pack();//Unnecessary when we have components?
 		frame.setVisible(true);
-	}*/
+	}
+	
+	
+	private static void compareToTest()
+	{
+		//Test the compareTo of Edge
+		int id = 1;
+		int sweep_y = 400 - 50;
+		
+		//Creating edges and endpoints
+		//Edge 1 & 2 - Vertical
+		Endpoint p1 = new Endpoint(50, 50);//Näst högsta punkten = p1
+		Endpoint p2 = new Endpoint(50, 100);//Högsta punkten = p2
+		Edge edge1 = new Edge(p1, p2, id++);
+		edge1.sweep_Y = sweep_y;
+		edge1.current_X = edge1.getUpper().getX();
+		
+
+		Endpoint p3 = new Endpoint(75, 50);
+		Endpoint p4 = new Endpoint(75, 100);//Lägsta punkten = p4
+		Edge edge2 = new Edge(p3, p4, id++);
+		edge2.sweep_Y = sweep_y;
+		edge2.current_X = edge2.getUpper().getX();
+		
+		
+		//=================================Test 1 - Insert two vertical segments and check their order============================
+		StatusTreeSet status = new StatusTreeSet();
+		status.add(edge1);
+		
+		status.traverseStatus();
+		System.out.println("The size of the status tree is now: " + status.size());
+		
+		status.add(edge2);
+		status.traverseStatus();
+		System.out.println("The size of the status tree is now: " + status.size());
+		junit.framework.Assert.assertEquals(true, status.first().compareTo(edge1)==0);
+		junit.framework.Assert.assertEquals(true, status.last().compareTo(edge2)==0);
+		
+		//=================================Test 2 - Insert one segment in the middle that hs the same upper one of the others
+		Endpoint lower3 = new Endpoint(75, 100);
+		Edge edge3 = new Edge(p1, lower3, id++);
+		edge3.current_X = p1.getX();
+		edge3.sweep_Y = sweep_y; //Keep swep_Y at the top since we now check uppers
+		
+		status.add(edge3);
+		status.traverseStatus();
+		System.out.println("Tree size: " + status.size());
+		junit.framework.Assert.assertEquals(true, status.first().compareTo(edge1)==0);
+		junit.framework.Assert.assertEquals(true, status.last().compareTo(edge2)==0);
+		junit.framework.Assert.assertEquals(true, status.higher(edge1).compareTo(edge3) == 0);
+		junit.framework.Assert.assertEquals(true, status.lower(edge2).compareTo(edge3)==0);
+		
+		//================================Test 3 - add another crossing segments that share upper and lowers
+		Edge edge4 = new Edge(p3, p2, id++);
+		edge4.current_X = p4.getX();
+		edge4.sweep_Y = sweep_y;
+		
+		status.add(edge4);//Edge 4 should be number three
+		status.traverseStatus();System.out.println("Tree size: " + status.size());//Should be 4
+		junit.framework.Assert.assertEquals(true, status.first().compareTo(edge1)==0);
+		junit.framework.Assert.assertEquals(true, status.last().compareTo(edge2)==0);
+		junit.framework.Assert.assertEquals(true, status.higher(edge1).compareTo(edge3) == 0);
+		junit.framework.Assert.assertEquals(true, status.lower(edge2).compareTo(edge4)==0);
+		
+		
+		//===============================Test 4 - add a horizontal edge at the top==========================
+		Edge edge5 = new Edge(p1, p3, id++);
+		edge5.current_X = p1.getX();
+		edge5.sweep_Y = sweep_y;
+		
+		
+		
+		status.add(edge5);
+		status.traverseStatus();
+		
+		junit.framework.Assert.assertEquals(true, status.first().getUpper().isUpperTo.contains(edge5)); //Edge1s upper has a ref to edge5
+		System.out.println(status.higher(edge1).id);
+		junit.framework.Assert.assertEquals(true, status.higher(edge1).getUpper().isUpperTo.contains(edge5)); //Edge 2s upper seem to not have it. Why?
+		
+		junit.framework.Assert.assertEquals(true, status.first().compareTo(edge1)==0);
+		junit.framework.Assert.assertEquals(true, status.last().compareTo(edge2)==0);
+		junit.framework.Assert.assertEquals(true, status.higher(edge1).compareTo(edge3) == 0);
+		junit.framework.Assert.assertEquals(true, status.higher(edge3).compareTo(edge5)==0);
+		junit.framework.Assert.assertEquals(true, status.higher(edge5).compareTo(edge4)==0);
+		junit.framework.Assert.assertEquals(true, status.higher(edge4).compareTo(edge2)==0);
+		
+		
+		//===============================Test 5 - Remove edge5==========================
+		edge5.getLower().isLowerTo.remove(edge5); //NB! Do not forget to remove all refs to edge 5 in endpoints that are still in the status
+		edge5.getUpper().isUpperTo.remove(edge5);
+		status.remove(edge5);
+		status.traverseStatus();
+		
+		////===============================Test 6 - Handle evenpoint p2==========================
+		status.remove(edge1);
+		p2.isLowerTo.remove(edge1);
+		p1.isUpperTo.remove(edge1); //NB! Could be dangerous to remove these too early. Do it after each remove?
+		
+		status.traverseStatus();
+		
+		status.remove(edge3);
+		p2.isLowerTo.remove(edge3);
+		p3.isUpperTo.remove(edge3);
+		
+		status.traverseStatus(); //Looking good. Skip assert.
+		
+		////===============================Test 7 - Handle evenpoint p4==========================
+		status.remove(edge4);
+		p4.isLowerTo.remove(edge4);
+		p1.isUpperTo.remove(edge4);
+		status.traverseStatus();
+		
+		status.remove(edge2);
+		p3.isUpperTo.remove(edge2);
+		p4.isLowerTo.remove(edge2);
+		status.traverseStatus();
+		
+		
+		
+		
+		
+		
+		
+		
+		/*Edge p3p4 = new Edge(p3, p4);
+		p3.setNextSeg(p3p4);
+		p4.setPrevSeg(p3p4);
+		Edge p4p1 = new Edge(p4, p1);
+		p4.setNextSeg(p4p1);
+		p1.setPrevSeg(p4p1);
+
+
+		eventQueueTest.insert(p1);
+		eventQueueTest.insert(p2);
+		eventQueueTest.insert(p3);
+		eventQueueTest.insert(p4);
+
+		//Gör status utan sweep_y. Gör endast massor då det är en upper point. Intersection point kommer inte behövas.
+		//Gör om alla intersection points till nya uppers. Typ.
+
+
+		//Lägg till polygon 2 och testa rebalance
+		Endpoint p5 = new Endpoint(55, 55);
+		Endpoint p6 = new Endpoint(57, 120);
+		Endpoint p7 = new Endpoint(65, 30);
+		Endpoint p8 = new Endpoint(58, 28);
+
+		Edge p5p6 = new Edge(p5, p6);
+		Edge p6p7 = new Edge(p6, p7);
+		Edge p7p8 = new Edge(p7, p8);
+		Edge p8p5 = new Edge(p8, p5);
+
+		p5.setNextSeg(p5p6);
+		p5.setPrevSeg(p7p8);
+		p6.setNextSeg(p6p7);
+		p6.setPrevSeg(p5p6);
+		p7.setNextSeg(p7p8);
+		p7.setPrevSeg(p6p7);
+		p8.setNextSeg(p8p5);
+		p8.setPrevSeg(p7p8);
+
+
+		//Printa hur trädet ser ut
+		System.out.println("Insert a polygons endpoints");
+		eventQueueTest.traverseInOrder();*/
+	}
 	
 	
 	

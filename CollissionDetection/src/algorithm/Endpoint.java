@@ -20,8 +20,8 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	//Papa's got a brand new bag!
 	private Edge nextSegment = null;
 	private Edge previousSegment = null;
-	private ArrayList<Edge> isUpperTo = new ArrayList<Edge>();//Bör vara en ArrayList
-	private ArrayList<Edge> isLowerTo;//Också ArrayList?
+	public ArrayList<Edge> isUpperTo = new ArrayList<Edge>();//Bör vara en ArrayList
+	public ArrayList<Edge> isLowerTo;//Också ArrayList?
 	
 	
 	public Edge leftmost, rightmost = null;
@@ -225,7 +225,7 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	@Override
 	public int compareTo(Endpoint o) {
 		// TODO Auto-generated method stub
-		if(realY<o.getRealY()||realY==o.getRealY()&&x>o.getX()){//This is smaller than o
+		if(realY<o.getRealY() || realY==o.getRealY() && x>o.getX()){//This is smaller than o
 			return -1;
 		}
 		else if(realY==o.getRealY()&&x==o.getX()){//Equals
@@ -233,7 +233,39 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		}
 		else return 1;
 	}
+	
+	
 
+	public boolean isEqualTo(Endpoint p) {
+		// TODO Auto-generated method stub
+		//return super.equals(arg0);
+		if(x == p.getX() && y == p.getY()) return true;
+		return false;
+	}
+	
+	public boolean upperToArrayContains(Edge segment)
+	{
+		for(Edge e : isUpperTo)
+		{
+			if(segment.id == e.id)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean lowerToArrayContains(Edge segment)
+	{
+		for(Edge e : isLowerTo)
+		{
+			if(segment.id == e.id)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 
 	//Fel i nedanstående metod.
 	/*Denna metod funkar endast för segment som inte korsar varandra.

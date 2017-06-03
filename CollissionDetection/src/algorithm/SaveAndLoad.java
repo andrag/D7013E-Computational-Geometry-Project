@@ -1,4 +1,4 @@
-package algorithm;
+/*package algorithm;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -50,4 +50,4 @@ public class SaveAndLoad {
 		return result;
 	}
 	
-}
+}*/
