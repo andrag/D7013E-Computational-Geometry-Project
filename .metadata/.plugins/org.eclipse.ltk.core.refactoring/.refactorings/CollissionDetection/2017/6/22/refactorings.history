@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring accessors="true" comment="Delete 2 elements from project &apos;CollissionDetection&apos;&#x0D;&#x0A;- Original project: &apos;CollissionDetection&apos;&#x0D;&#x0A;- Original elements:&#x0D;&#x0A;     Polygons_2017_06_04_18-53-13.ser&#x0D;&#x0A;     Polygons_2017_06_04_19-27-28.ser" description="Delete elements" element1="Polygons_2017_06_04_19-27-28.ser" element2="Polygons_2017_06_04_18-53-13.ser" elements="0" flags="589830" id="org.eclipse.jdt.ui.delete" resources="2" stamp="1496597567384" subPackages="false" version="1.0"/>
+</session>

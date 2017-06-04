@@ -29,6 +29,14 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 		if(start.getY() == end.getY()) isHorizontal = true;
 	}
 	
+	public void updateXandSweep(int sweep_Y)
+	{
+		this.sweep_Y = sweep_Y;
+		current_X = currentXCoord(sweep_Y);//<--------------------------------------Might be wrong
+	}
+	
+
+	
 	
 	public Endpoint getStart(){
 		return start;
@@ -55,11 +63,12 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 			upper = start;
 			lower = end;
 			start.addUpperTo(this);
-			start.isUpper = true;
-			end.isLower = true;
-			end.setLowerTo(this);
 			
-			//end.addLowerTo(this);
+			
+			start.isUpper = true;
+			
+			end.isLower = true;
+			end.addLowerTo(this);
 		}
 		else{
 			/*start.setLower();
@@ -69,11 +78,14 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 			upper = end;
 			lower = start;
 			end.addUpperTo(this);
+			
 			end.isUpper = true;
+			
+			
 			start.isLower = true;
-			start.setLowerTo(this);
-			//start.addLowerTo(this);
+			start.addLowerTo(this);
 		}
+		current_X = upper.getX();
 	}
 	
 	public Endpoint getUpper(){
@@ -88,15 +100,6 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 		upper = newUpper;
 	}
 	
-	/**
-	 * Get the x-coordinate of this line segment from the current y-coordinate of the sweep line
-	 * @param sweep_y
-	 * @return current x-coordinate
-	 */
-	public void updateXCoord(int sweep_y){
-		current_X = currentXCoord(sweep_y);
-		
-	}
 	
 	//Denna returnerar fel så in i bomben!! Används ej mer. <--------------------------------------------TA REDA PÅ VILKEN SOM SKA ANVÄNDAS!
 	//Ska ha korrekt matte! Bör jag lägga till constraints för endpointsen i segmenten???
@@ -226,11 +229,11 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 			//if(same element (parallell)) (check endpoints, ids, belonings, whatever) return 0
 			//else(we have a case where two segments intersect but are not the same. Might be of different lengths.) return -1 as default and print a trace_info
 		if(comparePointToEdge(o.current_X, o.sweep_Y) < 0){
-			System.out.println("Segment o is to the left(?), return -1");
+			//System.out.println("Segment o is to the left(?), return -1");
 			return -1;
 		}
 		else if(comparePointToEdge(o.current_X, o.sweep_Y) > 0) {
-			System.out.println("Segment o is to the right(?), return 1");
+			//System.out.println("Segment o is to the right(?), return 1");
 			return 1;
 		}
 		else
@@ -244,7 +247,7 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 			if((lower.isEqualTo(o.lower)) && (upper.isEqualTo(o.getUpper())))// && (upper.getBelonging() == o.upper.getBelonging())) //Need more checks? Id?`IDs must then follow along each segments wherever they may reside.
 			{
 				//The segments are the same
-				System.out.println("compareTo found a segment that matches o in the treeSet");
+				//System.out.println("compareTo found a segment that matches o in the treeSet");
 				return 0;
 			}
 			//2. They share the same upper but are different segments
@@ -252,28 +255,28 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 			{
 				//Compare their lower endpoints
 				if(comparePointToEdge(o.getLower().getX(), o.getLower().getRealY()) < 0) {
-					System.out.println("Segment o is to the left(?), return -1");
+					//System.out.println("Segment o is to the left(?), return -1");
 					return -1;
 				}
 				else if(comparePointToEdge(o.getLower().getX(), o.getLower().getRealY()) > 0) {
-					System.out.println("Segment o is to the right(?), return 1");
+					//System.out.println("Segment o is to the right(?), return 1");
 					return 1;
 				}
 				System.out.println("Edge.compareTo() failed (1)");
 				return 0;
 			}
 			//3. They share the same lower but are different segments
-			else if(lower.lowerToArrayContains(o))
+			else if(lower.lowerToArrayContains(o))//<------ Does not work!
 			{
-				System.out.println("Segment o has the same lower as another segment");
+				//System.out.println("Segment o has the same lower as another segment");
 				
 				// -> compare their upper endpoints
 				if(comparePointToEdge(o.getUpper().getX(), o.getUpper().getRealY()) < 0) {
-					System.out.println("o:s upper is to the left of the other segment, return -1");
+					//System.out.println("o:s upper is to the left of the other segment, return -1");
 					return -1;
 				}
 				else if(comparePointToEdge(o.getUpper().getX(), o.getUpper().getRealY()) > 0) {
-					System.out.println("o:s upper is to the right of the other segment, return 1");
+					//System.out.println("o:s upper is to the right of the other segment, return 1");
 					return 1;
 				}
 				System.out.println("Edge.compareTo() failed (2)");
@@ -291,8 +294,7 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 				int comparison = o.comparePointToEdge(current_X, sweep_Y);
 				if(comparison > 0) return -1;
 				else if(comparison < 0) return 1;
-				else System.out.println("SOMETHING IS WRONG!");
-				System.out.println("Edge.compareTo() FAILED REALLY BAAAAAD (2)");
+				System.out.println("Edge.compareTo() FAILED REALLY BAAAAAD (3)");
 				return 0;//Problem with return statements in this method. Cases that should not happen return 0. That is bad.
 			}
 			/*else

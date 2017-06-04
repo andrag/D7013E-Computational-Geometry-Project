@@ -35,16 +35,19 @@ public class StatusTreeSet extends TreeSet<Edge>{
 	 * 
 	 * 			1.3 Lower
 	 */
-	/*public void updateAllCurrentXCoords(int sweep_y){
-		Iterator<Edge> iterator = tree.iterator();
+
+	
+	public void updateAll(int sweep_Y)
+	{
+		Iterator<Edge> iterator = this.iterator();
 		while(iterator.hasNext()){
-			Edge edge = iterator.next();
-			edge.updateXCoord(sweep_y);
+			Edge edge = (Edge) iterator.next();
+			edge.updateXandSweep(sweep_Y);
 		}
-	}*/
+	}
 	
-	
-	public void traverseStatus(){
+	public void traverseStatus()
+	{
 		System.out.println("========================================\nTRAVERSE STATUS\n========================================");
 		Iterator<Edge> iterator = this.iterator();
 		while(iterator.hasNext()){

@@ -20,7 +20,7 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	//Papa's got a brand new bag!
 	private Edge nextSegment = null;
 	private Edge previousSegment = null;
-	public ArrayList<Edge> isUpperTo = new ArrayList<Edge>();//Bör vara en ArrayList
+	public ArrayList<Edge> isUpperTo;
 	public ArrayList<Edge> isLowerTo;//Också ArrayList?
 	
 	
@@ -36,13 +36,14 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		this.y = y;
 		realY = 400-y;//Dubbel grej
 		isLowerTo = new ArrayList<Edge>();
+		isUpperTo = new ArrayList<Edge>();
 	}
 
 	public void addUpperTo(Edge segment){
 		isUpperTo.add(segment);
 	}
 
-	public void setLowerTo(Edge segment){
+	public void addLowerTo(Edge segment){
 		//If this point is lower to two segments
 		isLowerTo.add(segment);
 	}
@@ -304,6 +305,7 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		else return 1;
 	}
 
+	//Maybe use the new compareTo in the Edge clas for this? (2017-06-04)
 	//These are for finding the leftmost and rightmost segments of isUpperTo
 	//findLeftmost and findRightmost are not tested
 	public Edge findLeftmost(){

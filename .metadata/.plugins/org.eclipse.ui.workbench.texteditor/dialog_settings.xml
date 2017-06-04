@@ -2,20 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="currentXCoord" key="selection"/>
+		<item value="deleteWith" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="deleteWith"/>
+			<item value="status"/>
 			<item value="currentXCoord"/>
 			<item value="sweep_y"/>
 			<item value="Edge"/>
 			<item value="dimension"/>
 			<item value="dimnsion"/>
 			<item value="sweep_y lies outside the segments endpoints."/>
-			<item value="private findLeftNeighbour är kallad."/>
-			<item value="findLef"/>
 		</list>
 		<list key="replacehistory">
 		</list>
