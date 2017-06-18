@@ -194,6 +194,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	 * @param leftNeighbour
 	 * @param rightNeighbour
 	 * @param p
+	 * @param lower
 	 */
 	public void findNewEvent(Edge leftNeighbour, Edge rightNeighbour, Endpoint p){//Borde köra point här istället så kan man kolla o den ska leta upp leftmost och rightmost.
 		Endpoint crossing;

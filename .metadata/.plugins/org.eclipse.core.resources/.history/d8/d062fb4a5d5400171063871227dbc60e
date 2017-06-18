@@ -15,13 +15,6 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	private static int edgeID = 0;//For keeping track of all the edges
 	private boolean intersecting = false;
 
-	
-	/**
-	 * Constructor: Creates a sorted event queue from the two starting points of the polygons.
-	 * 				Runs handleEventPoint() for each event point in order.
-	 * @param startpoint1
-	 * @param startpoint2
-	 */
 	public CollisionDetection(Endpoint startpoint1, Endpoint startpoint2){
 		//Make an eventqueue BBST
 		eventQueue = new AVLTree();
@@ -50,19 +43,13 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		}
 	}
 
-
-	/**
-	 * Handles each event point in the event queue in order.
-	 * Creates new event points as intersections are found and places them at the correct position in the event queue.
-	 * Fills an array list with all intersection points that are found.
-	 * @param Endpoint p
-	 */
+	
 	public void handleEventPoint(Endpoint p){
-
+		
 		if(p.isLower){
 			System.out.println("===============================Handle a lower eventpoint=============================");
-
-
+			
+			
 			int sweep_Y = p.getRealY();
 			status.updateAll(sweep_Y);
 
@@ -80,8 +67,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 
 			int sweep_Y = p.getRealY();
 			status.updateAll(sweep_Y);
-
-
+			
+			
 			if(p.getUpperTo().size()>1){//Point p is an upper point to two segments. Add both.
 				for(Edge e : p.getUpperTo()){
 					e.updateXandSweep(sweep_Y);
@@ -91,7 +78,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 						intersecting = true;
 					}
 					else System.out.println("No collisiion between this uppers segments. This case should only appear in the top point of a polygon if it is really simple :)");
-					 */}
+				*/}
 
 				//Find out which segment is leftmost resp rightmost
 				Edge left = p.findLeftmost();//Replaced by leftmost and rightmost inside Endpoints class
@@ -102,12 +89,12 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 				Edge rightNeighbour = status.higher(right);
 
 				//Check if the newly inserted segments intersect with their neighbours
-				findNewEvent(leftNeighbour, rightNeighbour, p);
+				findNewEvent(leftNeighbour, rightNeighbour, p, false);
 			}
 			else {
 				//This is an upper point to just one segment
 				p.getUpperTo().get(0).updateXandSweep(sweep_Y);
-
+				
 				status.add(p.getUpperTo().get(0));
 
 				//Find left and right neighbours of the new segment
@@ -115,7 +102,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 				Edge rightNeighbour = status.higher(p.getUpperTo().get(0));
 
 				//Check if the new segment intersect a neighbour in the status
-				findNewEvent(leftNeighbour, rightNeighbour, p);
+				findNewEvent(leftNeighbour, rightNeighbour, p, false);
 			}
 		}
 
@@ -133,7 +120,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 			Edge leftNeighbour = status.lower(left);
 			Edge rightNeighbour = status.higher(right);
 
-			findNewEvent(leftNeighbour, rightNeighbour, p);
+			findNewEvent(leftNeighbour, rightNeighbour, p, false);
 		}
 
 
@@ -152,34 +139,36 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	}
 
 	/**
-	 * Handles segments involved in an intersection.
-	 * Performs cutting of the parts of the segments that lie above intersection point p.
-	 * Deletes the old segments and insert the new shorter ones into the status. This reorders them in the status tree after the point where they cross.
+	 * Performs a cutting of the parts of the segments that lie above p
+	 * Deletes the old segments and insert the new shorter ones into the status. This reorders them in the status tree.
 	 * @param p An intersection point between two segments 
 	 */
 	private void handleIntersectingSegments(Endpoint p){
 		//1. Get the segments that are involved in the intersection (Only two are possible in this implementation, otherwise they cross themselves = not ok)
 		Edge tempSeg1 = p.getUpperTo().get(0);
+		int id1 = tempSeg1.id;
+		
 		Edge tempSeg2 = p.getUpperTo().get(1);
-
+		int id2 = tempSeg2.id;
+		
 		//2. Delete them from the status
 		tempSeg1.updateXandSweep(tempSeg1.getUpper().getRealY());//There is a need to revert their sweep_Y and currentX to the positions they had when their upper point was last updated. Otherwise they won't be found.
 		tempSeg2.updateXandSweep(tempSeg2.getUpper().getRealY());
 		status.remove(tempSeg1);
 		status.remove(tempSeg2);
-
+		
 		//3. Remove their references at their former upper
 		tempSeg1.getUpper().isUpperTo.remove(tempSeg1);
 		tempSeg2.getUpper().isUpperTo.remove(tempSeg2);
-
+		
 		//4. Set the intersecting point as their new upper
 		tempSeg1.changeUpper(p);
 		tempSeg2.changeUpper(p);
-
+		
 		//5. Update the status such that an add will be just like adding a new upper point of two segments
 		int sweep_Y = p.getRealY();
 		status.updateAll(sweep_Y);
-
+		
 		tempSeg1.updateXandSweep(sweep_Y);
 		tempSeg2.updateXandSweep(sweep_Y);
 
@@ -189,117 +178,147 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	}
 
 	/**
-	 * Takes an endpoint p that is an upper point of one or two segments.
-	 * Checks if the segments originating from p intersects with the left and/or right neighbour in the status tree.
+	 * 
 	 * @param leftNeighbour
 	 * @param rightNeighbour
 	 * @param p
+	 * @param lower
 	 */
-	public void findNewEvent(Edge leftNeighbour, Edge rightNeighbour, Endpoint p){//Borde köra point här istället så kan man kolla o den ska leta upp leftmost och rightmost.
+	public void findNewEvent(Edge leftNeighbour, Edge rightNeighbour, Endpoint p, boolean lower){//Borde köra point här istället så kan man kolla o den ska leta upp leftmost och rightmost.
 		Endpoint crossing;
+		if(!lower){
 
-		if(leftNeighbour==null)
-			System.out.println("There is no left neighbour.");
+			if(leftNeighbour==null)
+				System.out.println("There is no left neighbour.");
 
-		//Check if the segment cross its left neighbour
-		else{
-			if(p.getUpperTo().size()>1){
+			//Check if the segment cross its left neighbour
+			else{
+				if(p.getUpperTo().size()>1){
 
-				//Check left segment againts left neighbour
-				crossing = p.leftmost.doIntersect(leftNeighbour);
-				if(crossing == null){
-					System.out.println("The left segment doesn't intersect with its left neighbour.");
+					//Check left segment againts left neighbour
+					crossing = p.leftmost.doIntersect(leftNeighbour);
+					if(crossing == null){
+						System.out.println("The left segment doesn't intersect with its left neighbour.");
+					}
+					//Check that the crossing is not in the same lower point.
+					else if(!(leftNeighbour.getLower().compareTo(p.leftmost.getLower())==0)){ 
+
+						//The segments intersect, create a new eventpoint if they belong to different polygons
+						if(leftNeighbour.getLower().getBelonging() != p.leftmost.getLower().getBelonging()){
+							Endpoint intersection = new Endpoint(crossing.getX(), crossing.getY());
+							intersection.isIntersection = true;
+							intersection.setBelonging(p.getBelonging());
+
+							//Send the involved segments with the intersection
+							intersection.getUpperTo().add(leftNeighbour);
+							intersection.getUpperTo().add(p.leftmost);
+							eventQueue.insert(intersection);
+						}		
+					}
+					else System.out.println("The left segment intersect with its left neighbour in both their lower points");
 				}
-				//Check that the crossing is not in the same lower point.
-				else if(!(leftNeighbour.getLower().compareTo(p.leftmost.getLower())==0)){ 
-
-					//The segments intersect, create a new eventpoint if they belong to different polygons
-					if(leftNeighbour.getLower().getBelonging() != p.leftmost.getLower().getBelonging()){
+				else if(p.getUpperTo().size()==1){
+					//Check the only segment against its left neighbour
+					crossing = p.getUpperTo().get(0).doIntersect(leftNeighbour);
+					if(crossing == null){
+						System.out.println("The segment doesn't intersect with its left neighbour.");
+					}
+					//Check that the crossing isn't a crossing between two lowers.
+					else if(p.getUpperTo().get(0).getLower().compareTo(leftNeighbour.getLower())!=0 && p.getBelonging() != leftNeighbour.getLower().getBelonging()){//This should be ok. Only 1 element in isUpperTo --> this is not sprung from an intersection point
+						//The segments intersect, create a new eventpoint
 						Endpoint intersection = new Endpoint(crossing.getX(), crossing.getY());
 						intersection.isIntersection = true;
 						intersection.setBelonging(p.getBelonging());
 
 						//Send the involved segments with the intersection
 						intersection.getUpperTo().add(leftNeighbour);
-						intersection.getUpperTo().add(p.leftmost);
+						intersection.getUpperTo().add(p.getUpperTo().get(0));
 						eventQueue.insert(intersection);
-					}		
+					}
 				}
-				else System.out.println("The left segment intersect with its left neighbour in both their lower points");
 			}
-			else if(p.getUpperTo().size()==1){
-				//Check the only segment against its left neighbour
-				crossing = p.getUpperTo().get(0).doIntersect(leftNeighbour);
-				if(crossing == null){
-					System.out.println("The segment doesn't intersect with its left neighbour.");
-				}
-				//Check that the crossing isn't a crossing between two lowers.
-				else if(p.getUpperTo().get(0).getLower().compareTo(leftNeighbour.getLower())!=0 && p.getBelonging() != leftNeighbour.getLower().getBelonging()){//This should be ok. Only 1 element in isUpperTo --> this is not sprung from an intersection point
-					//The segments intersect, create a new eventpoint
-					Endpoint intersection = new Endpoint(crossing.getX(), crossing.getY());
-					intersection.isIntersection = true;
-					intersection.setBelonging(p.getBelonging());
 
-					//Send the involved segments with the intersection
-					intersection.getUpperTo().add(leftNeighbour);
-					intersection.getUpperTo().add(p.getUpperTo().get(0));
-					eventQueue.insert(intersection);
+			//Check if right neighbour is null
+			if(rightNeighbour==null)
+				System.out.println("There is no right neighbour.");
+
+			//Check if the segment cross its right neighbour
+			else{
+				if(p.getUpperTo().size()>1){
+
+					//Check right segment againts right neighbour
+					crossing = p.rightmost.doIntersect(rightNeighbour);
+					if(crossing == null){
+						System.out.println("The right segment doesn't intersect with its right neighbour.");
+					}
+					//Check that crossing isn't a crossing between two lowers and that they belong to different polygons
+					else if(p.rightmost.getLower().compareTo(rightNeighbour.getLower())!=0 && p.rightmost.getLower().getBelonging() != rightNeighbour.getLower().getBelonging()){
+						//The segments intersect, create a new eventpoint
+						Endpoint intersection = new Endpoint(crossing.getX(), crossing.getY());
+						intersection.isIntersection = true;
+						intersection.setBelonging(p.getBelonging());
+
+						//Send the involved segments with the intersection
+						intersection.getUpperTo().add(rightNeighbour);
+						intersection.getUpperTo().add(p.rightmost);
+						eventQueue.insert(intersection);
+					}
+					else System.out.println("The right segment intersect with its right neighbour in both their lower points.");
+				}
+				else if(p.getUpperTo().size()==1){
+					//Check the only segment against its right neighbour
+					crossing = p.getUpperTo().get(0).doIntersect(rightNeighbour);
+					if(crossing == null){
+						System.out.println("The segment doesn't intersect with its right neighbour.");
+					}
+					else if(p.getUpperTo().get(0).getLower().compareTo(rightNeighbour.getLower())!=0 && p.getBelonging() != rightNeighbour.getLower().getBelonging()){
+						//The segments intersect, create a new eventpoint
+						Endpoint intersection = new Endpoint(crossing.getX(), crossing.getY());
+						intersection.isIntersection = true;
+						intersection.setBelonging(p.getBelonging());
+
+						//Send the involved segments with the intersection
+						intersection.getUpperTo().add(rightNeighbour);
+						intersection.getUpperTo().add(p.getUpperTo().get(0));
+						eventQueue.insert(intersection);
+					}
+					else System.out.println("The segment intersect with its right neighbour in both their lower points.");
 				}
 			}
 		}
+		if(lower){ //This code is never run I think as of 2015-05-12
+			//This code shouldn't be run when we deal with closed polygons. There will always be an upper directly after the lower.
 
-		//Check if right neighbour is null
-		if(rightNeighbour==null)
-			System.out.println("There is no right neighbour.");
 
-		//Check if the segment cross its right neighbour
-		else{
-			if(p.getUpperTo().size()>1){
-
-				//Check right segment againts right neighbour
-				crossing = p.rightmost.doIntersect(rightNeighbour);
-				if(crossing == null){
-					System.out.println("The right segment doesn't intersect with its right neighbour.");
+			if(leftNeighbour!=null && rightNeighbour !=null &&! p.isUpper){//Added a check against upper coinciding with lower. Then should not check the neighbours, already done against the uppers segment(s).
+				//Check left and right neighbours against eachother
+				crossing = leftNeighbour.doIntersect(rightNeighbour);
+				if(crossing==null){
+					System.out.println("A lower endpoint should now have been deleted. It's two neighbours doesn't intersect.");
 				}
-				//Check that crossing isn't a crossing between two lowers and that they belong to different polygons
-				else if(p.rightmost.getLower().compareTo(rightNeighbour.getLower())!=0 && p.rightmost.getLower().getBelonging() != rightNeighbour.getLower().getBelonging()){
-					//The segments intersect, create a new eventpoint
+				else if(leftNeighbour.getLower().compareTo(rightNeighbour.getLower())!=0){//A check here against lower being the same as an intersection? No. Should be caught in the first findIntersectingSegments. I guess. This executes the lowers segment. I think.
+					System.out.println("A lower endpoint has probably been deleted. It's neighbours intersect.");
 					Endpoint intersection = new Endpoint(crossing.getX(), crossing.getY());
+					//intersection.isUpper = true;
 					intersection.isIntersection = true;
 					intersection.setBelonging(p.getBelonging());
 
 					//Send the involved segments with the intersection
-					intersection.getUpperTo().add(rightNeighbour);
-					intersection.getUpperTo().add(p.rightmost);
+					p.getUpperTo().add(leftNeighbour);
+					p.getUpperTo().add(rightNeighbour);
 					eventQueue.insert(intersection);
 				}
-				else System.out.println("The right segment intersect with its right neighbour in both their lower points.");
+				else System.out.println("The lowers neighbours cross and their lower points coincide. No need for a new intersection point.");
 			}
-			else if(p.getUpperTo().size()==1){
-				//Check the only segment against its right neighbour
-				crossing = p.getUpperTo().get(0).doIntersect(rightNeighbour);
-				if(crossing == null){
-					System.out.println("The segment doesn't intersect with its right neighbour.");
-				}
-				else if(p.getUpperTo().get(0).getLower().compareTo(rightNeighbour.getLower())!=0 && p.getBelonging() != rightNeighbour.getLower().getBelonging()){
-					//The segments intersect, create a new eventpoint
-					Endpoint intersection = new Endpoint(crossing.getX(), crossing.getY());
-					intersection.isIntersection = true;
-					intersection.setBelonging(p.getBelonging());
-
-					//Send the involved segments with the intersection
-					intersection.getUpperTo().add(rightNeighbour);
-					intersection.getUpperTo().add(p.getUpperTo().get(0));
-					eventQueue.insert(intersection);
-				}
-				else System.out.println("The segment intersect with its right neighbour in both their lower points.");
+			else{
+				System.out.println("A lower endpoint has probably been deleted. At least one of its neighbours is null. No new intersections can be found here.");
 			}
 		}
 	}
 
+	//Test för att se om allt funkar.
 
-
-	/*This function was used to handle the last event point.
+	/*This function was used to handle the last event point. Wait with this for now (2017-06-03)
 	private void handleLastPoint(Endpoint p){
 		boolean intersection = false;
 		if(p.isUpper){
@@ -319,6 +338,10 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		}
 	}*/
 
+
+	/*public int getSweepY(){
+		return sweep_y;
+	}*/
 
 	public static int incrementAndGetEdgeID(){
 		edgeID++;

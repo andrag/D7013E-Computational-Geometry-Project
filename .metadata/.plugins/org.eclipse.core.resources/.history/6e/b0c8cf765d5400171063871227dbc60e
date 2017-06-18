@@ -15,13 +15,6 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	private static int edgeID = 0;//For keeping track of all the edges
 	private boolean intersecting = false;
 
-	
-	/**
-	 * Constructor: Creates a sorted event queue from the two starting points of the polygons.
-	 * 				Runs handleEventPoint() for each event point in order.
-	 * @param startpoint1
-	 * @param startpoint2
-	 */
 	public CollisionDetection(Endpoint startpoint1, Endpoint startpoint2){
 		//Make an eventqueue BBST
 		eventQueue = new AVLTree();
@@ -51,12 +44,6 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	}
 
 
-	/**
-	 * Handles each event point in the event queue in order.
-	 * Creates new event points as intersections are found and places them at the correct position in the event queue.
-	 * Fills an array list with all intersection points that are found.
-	 * @param Endpoint p
-	 */
 	public void handleEventPoint(Endpoint p){
 
 		if(p.isLower){
@@ -102,7 +89,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 				Edge rightNeighbour = status.higher(right);
 
 				//Check if the newly inserted segments intersect with their neighbours
-				findNewEvent(leftNeighbour, rightNeighbour, p);
+				findNewEvent(leftNeighbour, rightNeighbour, p, false);
 			}
 			else {
 				//This is an upper point to just one segment
@@ -115,7 +102,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 				Edge rightNeighbour = status.higher(p.getUpperTo().get(0));
 
 				//Check if the new segment intersect a neighbour in the status
-				findNewEvent(leftNeighbour, rightNeighbour, p);
+				findNewEvent(leftNeighbour, rightNeighbour, p, false);
 			}
 		}
 
@@ -133,7 +120,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 			Edge leftNeighbour = status.lower(left);
 			Edge rightNeighbour = status.higher(right);
 
-			findNewEvent(leftNeighbour, rightNeighbour, p);
+			findNewEvent(leftNeighbour, rightNeighbour, p, false);
 		}
 
 
@@ -152,9 +139,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	}
 
 	/**
-	 * Handles segments involved in an intersection.
-	 * Performs cutting of the parts of the segments that lie above intersection point p.
-	 * Deletes the old segments and insert the new shorter ones into the status. This reorders them in the status tree after the point where they cross.
+	 * Performs a cutting of the parts of the segments that lie above p
+	 * Deletes the old segments and insert the new shorter ones into the status. This reorders them in the status tree.
 	 * @param p An intersection point between two segments 
 	 */
 	private void handleIntersectingSegments(Endpoint p){
@@ -189,11 +175,11 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	}
 
 	/**
-	 * Takes an endpoint p that is an upper point of one or two segments.
-	 * Checks if the segments originating from p intersects with the left and/or right neighbour in the status tree.
+	 * 
 	 * @param leftNeighbour
 	 * @param rightNeighbour
 	 * @param p
+	 * @param lower
 	 */
 	public void findNewEvent(Edge leftNeighbour, Edge rightNeighbour, Endpoint p){//Borde köra point här istället så kan man kolla o den ska leta upp leftmost och rightmost.
 		Endpoint crossing;

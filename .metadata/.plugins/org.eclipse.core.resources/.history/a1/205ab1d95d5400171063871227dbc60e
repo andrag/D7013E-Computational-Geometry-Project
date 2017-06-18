@@ -54,8 +54,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	/**
 	 * Handles each event point in the event queue in order.
 	 * Creates new event points as intersections are found and places them at the correct position in the event queue.
-	 * Fills an array list with all intersection points that are found.
-	 * @param Endpoint p
+	 * @param p
 	 */
 	public void handleEventPoint(Endpoint p){
 
@@ -152,9 +151,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	}
 
 	/**
-	 * Handles segments involved in an intersection.
-	 * Performs cutting of the parts of the segments that lie above intersection point p.
-	 * Deletes the old segments and insert the new shorter ones into the status. This reorders them in the status tree after the point where they cross.
+	 * Performs a cutting of the parts of the segments that lie above p
+	 * Deletes the old segments and insert the new shorter ones into the status. This reorders them in the status tree.
 	 * @param p An intersection point between two segments 
 	 */
 	private void handleIntersectingSegments(Endpoint p){
@@ -189,11 +187,11 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	}
 
 	/**
-	 * Takes an endpoint p that is an upper point of one or two segments.
-	 * Checks if the segments originating from p intersects with the left and/or right neighbour in the status tree.
+	 * 
 	 * @param leftNeighbour
 	 * @param rightNeighbour
 	 * @param p
+	 * @param lower
 	 */
 	public void findNewEvent(Edge leftNeighbour, Edge rightNeighbour, Endpoint p){//Borde köra point här istället så kan man kolla o den ska leta upp leftmost och rightmost.
 		Endpoint crossing;
