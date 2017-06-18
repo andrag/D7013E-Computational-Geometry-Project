@@ -21,7 +21,7 @@ import algorithm.*;
 public class Gui extends JPanel{
 	
 	
-	private String loadFile = "Polygons_2017_06_04_19-33-12.ser";
+	private String loadFile = "Polygons_2017_06_18_14-57-58.txt";
 	
 	private ArrayList<Endpoint> intersections;
 	
@@ -89,7 +89,7 @@ public class Gui extends JPanel{
 	private void runLoadedData()
 	{
 		//Load the polygons and draw them. Set all values as if finished.
-		SaveAndLoad.loadPolygons(loadFile);
+		/*SaveAndLoad.loadPolygons(loadFile);
 		startpoint1 = SaveAndLoad.polygon1.get(0);
 		for(Endpoint p : SaveAndLoad.polygon1)
 		{
@@ -102,8 +102,22 @@ public class Gui extends JPanel{
 		{
 			addGeometry(p.getX(), p.getY());
 		}
+		finishGeometry();*/
+		
+		SaveAndLoad.loadPolygonsFromTxt(loadFile);
+		ArrayList<Integer> polygon1List = SaveAndLoad.polygon1;
+		ArrayList<Integer> polygon2List = SaveAndLoad.polygon2;
+		for(int i = 0; i < polygon1List.size();i = i+2)
+		{
+			addGeometry(polygon1List.get(i), polygon1List.get(i+1));
+		}
 		finishGeometry();
 		
+		for(int i = 0; i < polygon2List.size();i = i+2)
+		{
+			addGeometry(polygon2List.get(i), polygon2List.get(i+1));
+		}
+		finishGeometry();
 	}
 	
 	//Draw lines when the mouse is clicked
@@ -183,7 +197,8 @@ public class Gui extends JPanel{
 	private void runAlgorithm(){
 		if(loadFile.isEmpty())
 		{
-			SaveAndLoad.savePolygons(startpoint1, startpoint2);
+			//SaveAndLoad.savePolygons(startpoint1, startpoint2);
+			SaveAndLoad.savePolygonsAsText(startpoint1, startpoint2);
 		}
 		
 		CollisionDetection detect = new CollisionDetection(startpoint1, startpoint2);

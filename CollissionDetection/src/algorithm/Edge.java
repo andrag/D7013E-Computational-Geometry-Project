@@ -121,7 +121,7 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 			return this.getLower().getX();//Any x will do. They are the same. This also skips dividing by zero in y = kx+m below.
 		}
 		//If a horizontal segment: Try setting current x to upper.getX()
-		else if(upper.getRealY() == lower.getRealY() && (sweep_y <= upper.getRealY() && sweep_y >= lower.getRealY())){
+		else if(upper.getRealY() == lower.getRealY() && sweep_y == upper.getRealY()){//(sweep_y <= upper.getRealY() && sweep_y >= lower.getRealY())){
 			//System.out.println("Segmentet är horisontellt.");
 			return upper.getX();
 		}
@@ -150,6 +150,11 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 		
 		else{
 			System.out.println("sweep_y lies outside the segments endpoints.");
+			//Check if linear algebra says that we have a point on the line
+			System.out.println("Sweep y s: " + sweep_y);
+			System.out.println("Segments upper: (" + this.upper.getX() + ", " + this.upper.getRealY() + ")");
+			System.out.println("Segments lower: (" + this.lower.getX() + ", " + this.lower.getRealY() + ")");
+			
 			return 2000;
 		}
 	}
@@ -222,6 +227,16 @@ public class Edge implements Comparable<Edge>, Serializable{//Last one only need
 	 */				
 	@Override
 	public int compareTo(Edge o) {
+		//The absolutely most simple check first. Added 2017-06-18.
+		if(o.current_X < current_X)
+		{
+			return 1;
+		}
+		else if (o.current_X > current_X)
+		{
+			return -1;
+		}
+		
 		//1. Compare o.current_X to this.segment
 		//if(o.x is to left) return -1
 		//if(o.x is to right) return 1

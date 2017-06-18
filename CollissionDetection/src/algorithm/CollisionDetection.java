@@ -26,6 +26,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	private ArrayList<Edge> intersectionInterior = new ArrayList<Edge>();
 
 	private boolean intersecting = false;
+	
+	private int debugCounter = 0;
 
 	//private static int sweep_y; //Idea. Use this to get hold of sweep_y from inside Edge and/or Endpoint. Important. Should not be modified from anywhere other than this class.
 
@@ -125,6 +127,12 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		 * Görs detta test?
 		 */
 		
+		debugCounter++;
+		if(debugCounter == 15)
+		{
+			System.out.println("Time to debug :)");
+		}
+		
 		if(p.isLower){
 			System.out.println("===============================Handle a lower eventpoint=============================");
 			
@@ -138,7 +146,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 				count++;
 			}
 			System.out.println("p is lower to "+count+" segments.");
-
+			System.out.println("Traverse the status before deleting.");
+			status.traverseStatus();
 			//At some point we try to delete a lower point with an upper that has never existed.
 			for(Edge e : p.getLowerTo()){//Tries to delete all segments the lower point refers to but there is only one segment left in the tree
 				System.out.println("Delete the segment: " + e.id);
@@ -146,6 +155,12 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 				e.getUpper().isUpperTo.remove(e);//2017-06-04 Ooops. Forgot about this :P Added.
 			}
 			p.getLowerTo().clear();
+			
+			System.out.println("Handled a lower. Deletd shit. Traversing the fucking tree.");
+			status.traverseStatus();
+			
+			/*int sweep_Y = p.getRealY(); <--- Should these be after remove to avoid "sweep_y lies outside blabla" ?
+			status.updateAll(sweep_Y);*/
 		}
 
 
@@ -154,7 +169,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 			System.out.println("/n================================Upper inserted===================================/n/n");
 
 			int sweep_Y = p.getRealY();
-			status.updateAll(sweep_Y);
+			status.updateAll(sweep_Y);// <------- SWEEP_Y lies outside blablabla! 2017-06-18 Obegripligt! Ska inte finnas några, ska ha tagits bort ovan.
 			
 			//Used to be an out commented code part here for checking if a new upper is in the interior of an existing segment.
 			//That should be spotted by find new event and doIntersect...Or is it?
@@ -261,8 +276,18 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		
 		//2. Delete them from the status.... How to do this when there is an intersection??? The point will lie on the line but they will be reoredered under the point so the search will not find it.
 		//Solution - temporarily set the current_x of the segments to their FORMER value.Wait with updating til after this deleting is done!
+		System.out.println("handleIntersection removes uncropped segments: " + tempSeg1.id + " and " + tempSeg2.id);
+		System.out.println("Status before removal");
+		status.traverseStatus();
+		
+		tempSeg1.updateXandSweep(tempSeg1.getUpper().getRealY());
+		tempSeg2.updateXandSweep(tempSeg2.getUpper().getRealY());
+		
 		status.remove(tempSeg1);
-		status.remove(tempSeg2);
+		status.remove(tempSeg2); //<----------------------------------------THIS ONE FAILS TO REMOVE SEGMENT 5 (2017-06-18)
+		
+		System.out.println("Status after removal");
+		status.traverseStatus();
 		
 		//3. Remove their references at their former upper
 		tempSeg1.getUpper().isUpperTo.remove(tempSeg1);
@@ -310,7 +335,10 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		
 		//5. Update the status such that an add will be just like adding a new upper point of two segments
 		int sweep_Y = p.getRealY();
-		status.updateAll(sweep_Y);
+		status.updateAll(sweep_Y); //<------------- Update sweep_y of tempSeg1 and tempSeg2  as well! Forgot!
+		
+		tempSeg1.updateXandSweep(sweep_Y);
+		tempSeg2.updateXandSweep(sweep_Y);
 
 		//6. Insert the new modified segments into the status again
 		status.add(tempSeg1);
