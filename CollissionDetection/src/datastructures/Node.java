@@ -5,10 +5,10 @@ import java.io.Serializable;
 import algorithm.Edge;
 import algorithm.Endpoint;
 
-//import avl_tree.Node;
-
-
-//import avl_tree.AVLTree.Node;
+/**
+ * Node class for the AVLTree
+ * @author Anders
+ */
 
 public class Node implements Serializable{
 	/**
@@ -17,7 +17,6 @@ public class Node implements Serializable{
 	private static final long serialVersionUID = 1L;
 	public Node left, right;
 	Node parent;
-	//int value ;
 	Endpoint eventPoint = new Endpoint(1, 1);
 	Edge segment;
 	public int height = 0;
@@ -70,66 +69,5 @@ public class Node implements Serializable{
 			else return false;
 		}
 		else return false;
-	}
-	
-	
+	}	
 }
-
-
-
-
-/*import polygontest.*;
-
-/*
- * En nod i det BST som är EventQueue
- * @Params: Edge, noden håller en endpoint, 
- * @Params: isUpper, noden håller start eller endpoint beroende på detta
- */
-
-/*public class Node {
-
-	private Endpoint point;
-	private Edge segment;
-
-
-	public Node leftChild = null;
-	public Node rightChild = null;
-
-	public int height;
-
-	public Node(Endpoint point){
-		this.point = point;
-		segment = null;
-	}
-
-
-	//Endpointen avgör var trädet noden ska ligga.
-	public Endpoint getEndpoint(){
-		return point;
-	}
-
-	public Edge getSegment(){
-		return segment;//Can be null
-	}
-
-	public void setSegment(Edge segment){
-		this.segment = segment;
-	}
-
-	public int getHeight(){
-		return height;
-	}
-
-
-	public Node getLeftChild(){
-		return leftChild;
-	}
-
-	public Node getRightChild(){
-		return rightChild;
-	}
-
-
-
-
-}*/

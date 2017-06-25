@@ -1,6 +1,5 @@
 package algorithm;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,30 +10,27 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	private int realY;
 	public boolean isUpper, isLower= false;
 	public boolean isIntersection = false; 
-	private Edge segment = null;//Kanske onödig. Kan räcka med att ha en lista.
-	//private Edge isLowerTo = null;//Endast upper bör hålla segments. Blir krångligt annars.
+	private Edge segment = null;
 	private ArrayList<Edge> intersectingEdges = null;
 	public static final int NONE = 0, POLYGON1 = 1, POLYGON2 = 2;
 	private int belongsTo;
 
-	//Papa's got a brand new bag!
 	private Edge nextSegment = null;
 	private Edge previousSegment = null;
 	public ArrayList<Edge> isUpperTo;
-	public ArrayList<Edge> isLowerTo;//Också ArrayList?
-	
+	public ArrayList<Edge> isLowerTo;
 	
 	public Edge leftmost, rightmost = null;
 
-
-
-
-
-
+	/**
+	 * Constructor
+	 * @param x
+	 * @param y
+	 */
 	public Endpoint(int x, int y){
 		this.x = x;
 		this.y = y;
-		realY = 400-y;//Dubbel grej
+		realY = 400-y;
 		isLowerTo = new ArrayList<Edge>();
 		isUpperTo = new ArrayList<Edge>();
 	}
@@ -44,7 +40,6 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	}
 
 	public void addLowerTo(Edge segment){
-		//If this point is lower to two segments
 		isLowerTo.add(segment);
 	}
 
@@ -59,8 +54,6 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	public void clearSegmentsInUpperTo(){
 		isUpperTo.clear();
 	}
-
-
 
 
 	public int getX(){
@@ -91,7 +84,6 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		return previousSegment;
 	}
 
-	//Make points
 	public void paintPoint(Graphics g){
 		g.fillRect(x, y, 3, 3);
 	}
@@ -118,15 +110,6 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		this.x = x;
 		this.y = y;
 	}
-	/*
-	public void setEdge(Edge segment){
-		if(this.isUpper){
-			this.segment = segment;
-		}
-		else if(this.isLower){
-			this.isLowerTo = segment;
-		}
-	}*/
 
 	public Edge getSegment(){
 		return segment;
@@ -145,65 +128,6 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	}
 
 
-	//Denna kanske ger nullPointerException
-	public boolean isSmallerThan(Endpoint e){
-		//Case 1: Check if this point is smaller than e in y or greater in x.
-		if(y < e.getY() || y == e.getY() && x >e.getX()){
-			return true;
-		}
-		//Case 2: Check if they lie on the same point
-
-		if(y == e.getY()&&x == e.getX()){
-			//Case 2.1: Prioritize upper before lower. Otherwhise lower may be deleted from status before tested for intersection with upper.
-			if(this.isLower && e.isUpper){
-				return true;
-			}
-			else if(this.isUpper&&e.isLower){
-				return false;
-			}
-
-			//Case 2.2: If both are upper and lie on the same point. Sort after their lower endpoints.
-			else if(this.isUpper&&!e.isUpper){//If the points are totally equal. Compare their segments lower endpoints
-				if(this.segment.getLower().getY()<e.getSegment().getLower().getY()){//Någonstans checkas x-värdet på lower men y är viktigare. Även i statusen?
-					return true;
-				}
-				else if(this.segment.getLower().getY() == e.getSegment().getLower().getY() && this.segment.getLower().getX()>e.getSegment().getLower().getX()){
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-
-
-
-	/*
-	//Returns all segments this endpoint is upper to that are not duplicates of existing ones.
-	public ArrayList<Edge> getUniqueSegments(Edge segment){//Borde kanske jämföra punktens alla upperTo med this.upperTo. O(n^2)??? Ajajaj :/
-		ArrayList<Edge> newSegments = new ArrayList<Edge>();
-		for(Edge e : isUpperTo){
-			if(!segmentDuplicate(e, segment)){
-				newSegments.add(e);
-			}	
-		}
-		return newSegments;
-	}*/
-
-	private boolean segmentDuplicate(Edge segment1, Edge segment2){
-
-		//Check if the edges are the same if they have the same upper and lower.
-		if(segment1.getUpper().getX()==segment2.getUpper().getX()&&segment1.getUpper().getY()==segment2.getUpper().getY()&&segment1.getLower().getX()==segment2.getLower().getX()&&segment1.getLower().getY()==segment2.getLower().getY()){
-			return true;
-		}
-		//Check if the edges are the same if they have the different upper and lower.(Total overlap but different directions)
-		//Must compare only the coordinates and not the whole segments
-		else if(segment1.getUpper().getX()==segment2.getLower().getX()&&segment1.getUpper().getY()==segment2.getLower().getY()&&segment1.getLower().getX()==segment2.getUpper().getX()&&segment1.getLower().getY()==segment2.getUpper().getY()){
-			return true;
-		}
-		return false;
-	}
-
 	public boolean isIntersection(){
 		return isIntersection;
 	}
@@ -212,6 +136,9 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		isIntersection = set;
 	}
 
+	/**
+	 * Sets which polygon this endpoint belongs to
+	 */
 	public void setBelonging(int polygon){
 		if(polygon == 0 || polygon == 1 || polygon == 2){
 			belongsTo = polygon;
@@ -222,7 +149,9 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		return belongsTo;
 	}
 
-	//Compare this to another endpoint in Y and X
+	/**
+	 * Compare the x and y coordinates of this endpoint to a provided endpoint o
+	 */
 	@Override
 	public int compareTo(Endpoint o) {
 		// TODO Auto-generated method stub
@@ -238,8 +167,6 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	
 
 	public boolean isEqualTo(Endpoint p) {
-		// TODO Auto-generated method stub
-		//return super.equals(arg0);
 		if(x == p.getX() && y == p.getY()) return true;
 		return false;
 	}
@@ -268,13 +195,16 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		return false;
 	}
 
-	//Fel i nedanstående metod.
-	/*Denna metod funkar endast för segment som inte korsar varandra.
-	 * Används för insert och search i statusen. Segment som korsar varandra ska ge upphov till nya uppers innan denna behöver användas.
-	 * Den funkar även för segment som har en gemensam upper.
+	
+	/**
+	 * For finding out which side of a segment point lies
+	 * Returns: 
+	 * 	-1 for leftside
+	 *  0 for on the line
+	 *  1 for right side
 	 */
 	public int isToRightOrLeftOf(Edge segment){
-		//Determinant stuff
+
 		int det = (segment.getLower().getX()-segment.getUpper().getX())*(getRealY()-segment.getUpper().getRealY()) - (segment.getLower().getRealY()-segment.getUpper().getRealY())*(getX()-segment.getUpper().getX());
 		if(det<0){
 			return -1;
@@ -286,32 +216,15 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		return 0;
 	}
 
-	//Solution from http://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
-	//position = sign( (Bx-Ax)*(Y-Ay) - (By-Ay)*(X-Ax) )
 
-	public int testNewSideMethod(Edge segment){
-		int Ax = segment.getUpper().getX();
-		int Ay = segment.getUpper().getRealY();
-		int Bx = segment.getLower().getX();
-		int By = segment.getLower().getRealY();
-
-		int det = (Bx-Ax)*(getRealY()-Ay) - (By-Ay)*(x-Ax);
-		if(det==0){
-			return 0;
-		}
-		if(det<0){
-			return -1;
-		}
-		else return 1;
-	}
-
-	//Maybe use the new compareTo in the Edge clas for this? (2017-06-04)
-	//These are for finding the leftmost and rightmost segments of isUpperTo
-	//findLeftmost and findRightmost are not tested
+	
+	/**
+	 *  Find the leftmost segment that has this Enpoint as an upper point.
+	 */
 	public Edge findLeftmost(){
 		Edge left = isUpperTo.get(0);
 		for(Edge e : isUpperTo){
-			if(e.getLower().isToRightOrLeftOf(left)<0){//May throw exception. May only be used with two uppers at the same place... Is this always the case?
+			if(e.getLower().isToRightOrLeftOf(left)<0){
 				left = e;
 			}
 		}
@@ -319,10 +232,13 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		return left;
 	}
 
+	/**
+	 *  Find the rightmost segment that has this Enpoint as an upper point.
+	 */
 	public Edge findRightmost(){
 		Edge right = isUpperTo.get(0);
 		for(Edge e : isUpperTo){
-			if(e.getLower().isToRightOrLeftOf(right)>0){//If e is to the right of right -> update right
+			if(e.getLower().isToRightOrLeftOf(right)>0){
 				right = e;
 			}
 		}

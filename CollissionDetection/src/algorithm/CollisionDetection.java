@@ -17,8 +17,34 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 
 	
 	/**
-	 * Constructor: Creates a sorted event queue from the two starting points of the polygons.
+	 * Constructor: 1. Creates a sorted event queue from the two starting points of the polygons.
+	 * 				2. Creates a status
+	 * 
+	 * 					Data structures
+	 * 						Both the event queue and the status are self-balancing binary search trees that
+	 * 						ensures O(log n) for each insert, retrieve and delete operation.
+	 * 					
+	 * 					The sweep line 
+	 * 						The event points in the event queue are sorted such that the points with largest Y coordinates are handled first. Making
+	 * 						up a line sweep approach where the sweep line moves downwards along the y-axis.
+	 * 						The event points can be points that are considered as:
+	 * 							1. Upper point to one or two segments
+	 * 							2. Lower point to one or two segments
+	 * 							3. An intersection between two segments
+	 * 							4. Combinations of upper and lower
+	 * 
+	 * 
+	 * 					Time complexity
+	 * 
+	 * 
+	 * 
+	 * 
 	 * 				Runs handleEventPoint() for each event point in order.
+	 * 
+	 * 				The event queue is a binary search tree that 
+	 * 			
+	 * 
+	 * 
 	 * @param startpoint1
 	 * @param startpoint2
 	 */
@@ -64,7 +90,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 
 
 			int sweep_Y = p.getRealY();
-			status.updateAll(sweep_Y);
+			status.updateAll(sweep_Y); 	//<--------------Updating all segments here gives O(n^2) time since the entire status need to be traversed for each event point, messing up the log n benefit of the BBST
+										//					Solution: Update only when comparing segments
 
 			//Delete all segments that has a lower point in p
 			for(Edge e : p.getLowerTo()){
