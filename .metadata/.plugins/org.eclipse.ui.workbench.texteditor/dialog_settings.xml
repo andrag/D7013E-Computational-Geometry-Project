@@ -2,20 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="findNewEvent" key="selection"/>
+		<item value="Equals" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="findNewEvent"/>
-			<item value="sweep_y lies outside the segments endpoints."/>
-			<item value="deleteWith"/>
-			<item value="status"/>
-			<item value="currentXCoord"/>
-			<item value="sweep_y"/>
-			<item value="Edge"/>
-			<item value="dimension"/>
+			<item value="equals"/>
+			<item value="status.remove"/>
+			<item value="updateXandSweep"/>
+			<item value="sweep_Y"/>
+			<item value="status.update"/>
+			<item value="i"/>
+			<item value="intersectionOf"/>
+			<item value="doIntersect"/>
 		</list>
 		<list key="replacehistory">
 		</list>
@@ -24,7 +24,7 @@
 		<item value="257" key="DIALOG_WIDTH"/>
 		<item value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI" key="DIALOG_FONT_NAME"/>
 		<item value="368" key="DIALOG_HEIGHT"/>
-		<item value="1402" key="DIALOG_X_ORIGIN"/>
-		<item value="642" key="DIALOG_Y_ORIGIN"/>
+		<item value="1188" key="DIALOG_X_ORIGIN"/>
+		<item value="259" key="DIALOG_Y_ORIGIN"/>
 	</section>
 </section>

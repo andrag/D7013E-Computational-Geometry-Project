@@ -14,8 +14,10 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 
 	private static int edgeID = 0;//For keeping track of all the edges
 	private boolean intersecting = false;
-
 	
+	public static boolean isHandlingIntersection = false;
+
+	public static int sweep_Y;
 	/**
 	 * Constructor: 1. Creates a sorted event queue from the two starting points of the polygons.
 	 * 				2. Creates a status
@@ -89,13 +91,15 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 			System.out.println("===============================Handle a lower eventpoint=============================");
 
 
-			int sweep_Y = p.getRealY();
-			status.updateAll(sweep_Y); 	//<--------------Updating all segments here gives O(n^2) time since the entire status need to be traversed for each event point, messing up the log n benefit of the BBST
+			sweep_Y = p.getRealY();
+			//status.updateAll(sweep_Y); 	//<--------------Updating all segments here gives O(n^2) time since the entire status need to be traversed for each event point, messing up the log n benefit of the BBST
 										//					Solution: Update only when comparing segments
 
 			//Delete all segments that has a lower point in p
 			for(Edge e : p.getLowerTo()){
+				System.out.println("(1)Removing segment with id: " + e.id);
 				status.remove(e);
+				status.traverseStatus();
 				e.getUpper().isUpperTo.remove(e);
 			}
 			p.getLowerTo().clear();
@@ -105,8 +109,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		if(p.isUpper() && !p.isIntersection){
 			System.out.println("/n================================Handle an upper event point===================================/n/n");
 
-			int sweep_Y = p.getRealY();
-			status.updateAll(sweep_Y);
+			sweep_Y = p.getRealY();
+			//status.updateAll(sweep_Y);
 
 
 			if(p.getUpperTo().size()>1){//Point p is an upper point to two segments. Add both.
@@ -192,8 +196,16 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		//2. Delete them from the status
 		tempSeg1.updateXandSweep(tempSeg1.getUpper().getRealY());//There is a need to revert their sweep_Y and currentX to the positions they had when their upper point was last updated. Otherwise they won't be found.
 		tempSeg2.updateXandSweep(tempSeg2.getUpper().getRealY());
+		
+		System.out.println("(2) Removing segment with id: " + tempSeg1.id);
+		isHandlingIntersection = true;
 		status.remove(tempSeg1);
+		status.traverseStatus();
+		System.out.println("(3) Removing segment with id: " + tempSeg2.id);
 		status.remove(tempSeg2);
+		status.traverseStatus();
+		isHandlingIntersection = false;
+		
 
 		//3. Remove their references at their former upper
 		tempSeg1.getUpper().isUpperTo.remove(tempSeg1);
@@ -204,8 +216,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		tempSeg2.changeUpper(p);
 
 		//5. Update the status such that an add will be just like adding a new upper point of two segments
-		int sweep_Y = p.getRealY();
-		status.updateAll(sweep_Y);
+		sweep_Y = p.getRealY();
+		//status.updateAll(sweep_Y);
 
 		tempSeg1.updateXandSweep(sweep_Y);
 		tempSeg2.updateXandSweep(sweep_Y);

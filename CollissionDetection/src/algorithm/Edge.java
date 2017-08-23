@@ -13,7 +13,7 @@ public class Edge implements Comparable<Edge>, Serializable{
 
 	//Use these for comparisons in the Status tree
 	public int current_X; 
-	public int sweep_Y;
+	//public int sweep_Y;
 
 	public Edge(Endpoint start, Endpoint end, int id){
 		this.start = start;
@@ -26,7 +26,7 @@ public class Edge implements Comparable<Edge>, Serializable{
 
 	public void updateXandSweep(int sweep_Y)
 	{
-		this.sweep_Y = sweep_Y;
+		//this.sweep_Y = sweep_Y;
 		current_X = currentXCoord(sweep_Y);
 	}
 
@@ -117,10 +117,19 @@ public class Edge implements Comparable<Edge>, Serializable{
 	 * @return: -1 ,0 or 1 if this Edge has a smaller x-coordinate value, equal or larger than the provided Edges' current x-coordinate.
 	 * 
 	 * NB! current_X and sweep_Y must be updated in the Edge object that is passed to this method beforehand!!
-	 */				
+	 */
+
+	//This fails on intersection points sometimes.
+	/*
+	 * The point lies on the line of another segment
+	 * currentX == o.currentX
+	 */
 	@Override
-	public int compareTo(Edge o) {
-		//The absolutely most simple check first. Added 2017-06-18.
+	public int oldcompareTo(Edge o) {
+		//Get the x-coors of the segments that are compared
+		current_X = currentXCoord(CollisionDetection.sweep_Y);
+		o.current_X = currentXCoord(CollisionDetection.sweep_Y);
+
 		if(o.current_X < current_X)
 		{
 			return 1;
@@ -130,22 +139,22 @@ public class Edge implements Comparable<Edge>, Serializable{
 			return -1;
 		}
 
-		if(comparePointToEdge(o.current_X, o.sweep_Y) < 0){
+		if(comparePointToEdge(o.current_X, CollisionDetection.sweep_Y) < 0){
 			//System.out.println("Segment o is to the left(?), return -1");
 			return -1;
 		}
-		else if(comparePointToEdge(o.current_X, o.sweep_Y) > 0) {
+		else if(comparePointToEdge(o.current_X, CollisionDetection.sweep_Y) > 0) {
 			//System.out.println("Segment o is to the right(?), return 1");
 			return 1;
 		}
-		else
+		else //A point lies on the line of the other segment. They are crossing, share an upper or share lowers
 		{
 			if((lower.isEqualTo(o.lower)) && (upper.isEqualTo(o.getUpper())))
 			{
 				return 0;
 			}
 
-			else if(upper.upperToArrayContains(o))
+			else if(upper.upperToArrayContains(o)) //Upper could be any upper of the segments if it is a crossing
 			{
 				//Compare their lower endpoints
 				if(comparePointToEdge(o.getLower().getX(), o.getLower().getRealY()) < 0) {
@@ -178,13 +187,25 @@ public class Edge implements Comparable<Edge>, Serializable{
 			}
 			else
 			{
+				//Try handling it as if it is an intersection on the middle of the line. CurrentX and Sweep_Y is at an intersection point
+				//If it is an intersection, we should look for the edges as if it is before a swapping of the, I think, and hope it will work.
+				/*if(CollisionDetection.isHandlingIntersection){
+					if(comparePointToEdge(o.getUpper().getX(), o.getUpper().getY()) < 0){
+						//System.out.println("Segment o is to the left(?), return -1");
+						return -1;
+					}
+					else if(comparePointToEdge(o.getUpper().getX(), o.getUpper().getY()) > 0) {
+						//System.out.println("Segment o is to the right(?), return 1");
+						return 1;
+					}
+				}*/
 				//The current point of segment o is on the line of THIS segment
 				//It is not the same segment
 				//It is not the upper to THIS segment
 				//It is the LOWER to this segment
 
 				//Should update current x and sweep y of THIS segment here. Still just a test so don't need it. (Should be updated outside anyway.)
-				int comparison = o.comparePointToEdge(current_X, sweep_Y);
+				int comparison = o.comparePointToEdge(current_X, CollisionDetection.sweep_Y);
 				if(comparison > 0) return -1;
 				else if(comparison < 0) return 1;
 				System.out.println("Edge.compareTo() FAILED REALLY BAAAAAD (3)");
@@ -192,6 +213,67 @@ public class Edge implements Comparable<Edge>, Serializable{
 			}
 		}
 	}
+	
+	
+	//More basic approach - never cut any segments. Just look at currentX and sweep Y to decide which way to go in teh tree
+	public int compareTo(Edge o)
+	{
+		/* Cases
+		 *  1. The segments are the same - return 0
+		 *  2. Go left
+		 *  3. Go right
+		 *  4. the segments cross
+		 */
+		//Case 1 - The segments are the same
+		if(this.upper.compareTo(o.getUpper()) == 0 && this.lower.compareTo(o.getLower()) == 0)
+		{
+			return 0;
+		}
+		
+		//Case 2 - Go left
+		if(comparePointToEdge(o.current_X, CollisionDetection.sweep_Y) < 0){
+			//System.out.println("Segment o is to the left(?), return -1");
+			return -1;
+		}
+		//Case 3 - Go right
+		else if(comparePointToEdge(o.current_X, CollisionDetection.sweep_Y) > 0) {
+			//System.out.println("Segment o is to the right(?), return 1");
+			return 1;
+		}
+		
+		else //4. The current point on the segments coincide - we have an upper, an intersection or a lower
+		{
+			//4.1 Check if this is a lower to more than one segment. Might be that we want to remove a segment but hit another that has a lower here first
+			if((this.lower.compareTo(o.lower) == 0) && (this.lower.getX() == current_X) && (this.lower.getRealY() == CollisionDetection.sweep_Y))
+			{
+				//How to know in which way to move here? Compare o:s upper to this edge. 
+				if(comparePointToEdge(o.getUpper().getX(), o.getUpper().getY()) < 0){
+					return -1;
+				}
+
+				else if(comparePointToEdge(o.getUpper().getX(), o.getUpper().getY()) > 0) {
+					return 1;
+				}
+				
+			}
+			
+			//4.2 Not a lower of two segments, could be an intersection - Treat uppers and intersections alike? Check their lowers
+			else
+			{
+				//Check o:s lower to see which way to go
+				if(comparePointToEdge(o.getLower().getX(), o.getLower().getRealY()) < 0){
+					return -1;
+				}
+				//Case 3 - Go right
+				else if(comparePointToEdge(o.getLower().getX(), o.getLower().getRealY()) > 0) {
+					return 1;
+				}
+			}
+			
+		}
+		return 10000;
+	}
+
 
 	/**
 	 * Purpose: Compare a point to a segment to see which side it lies on

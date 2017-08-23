@@ -1737,7 +1737,7 @@ public class Main {
 	 * 		3. When removing an edge completely - make sure to remove refs from it in isLowerTo and isUpperTo arrays of involved endpoints (might not matter but anyway...)
 	 */
 	
-	private static void compareToTest()
+	/*private static void compareToTest()
 	{
 		//Test the compareTo of Edge
 		int id = 1;
@@ -1903,10 +1903,7 @@ public class Main {
 		p3.isUpperTo.remove(edge2);
 		p4.isLowerTo.remove(edge2);
 		status.traverseStatus();
-	}
-	
-	
-	
+	}*/
 }
 
 

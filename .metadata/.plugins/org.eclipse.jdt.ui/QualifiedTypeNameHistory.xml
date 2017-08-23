@@ -21,7 +21,6 @@
 <fullyQualifiedTypeName name="java.io.Serializable"/>
 <fullyQualifiedTypeName name="java.util.TreeSet"/>
 <fullyQualifiedTypeName name="java.util.Iterator"/>
-<fullyQualifiedTypeName name="algorithm.CollisionDetection"/>
 <fullyQualifiedTypeName name="java.util.logging.Logger"/>
 <fullyQualifiedTypeName name="datastructures.StatusTreeSet"/>
 <fullyQualifiedTypeName name="org.junit.Assert"/>
@@ -36,4 +35,5 @@
 <fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="algorithm.SaveAndLoad"/>
 <fullyQualifiedTypeName name="java.io.BufferedReader"/>
+<fullyQualifiedTypeName name="algorithm.CollisionDetection"/>
 </qualifiedTypeNameHistroy>
