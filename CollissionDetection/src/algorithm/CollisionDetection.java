@@ -1,5 +1,87 @@
 package algorithm;
 
+/**
+ * Project: Implementation of efficient Collision Detection Algorithm
+ * 
+ * Course: D7013E Computational Geometry
+ * Author: Anders Ragnarsson
+ * Email: andrag-0@student.ltu.se 
+ * 
+ * 1. Description of the algorithm
+ * 
+ * Input: the endpoints that make up the line segments of two polygons that may or may not overlap with eachother.
+ * Output: A list of intersection points between the two polygons, if the polygons overlap.
+ * Time constraints: as efficient as possible, no naive solution.
+ * 
+ * The algorithm is a line sweep solution where the sweep line moves down from the top along the y-axis. A status tree holds the line segments that the
+ * sweep line crosses, but not the ones it has passed or not yet reached. In this way, only the segments within the status are compared. When the sweep line 
+ * has passed the end of a segment, it is removed from the status tree and never again considered. 
+ * The algorithm contains the following steps:
+ * 
+ * 		1.1. The endpoints of the polygons are sorted in a queue made up of a self-balancing binary search tree (BBST) in n(log n) time.
+ * 
+ * 		1.2. For each event point in the queue:
+ * 
+ * 			* If it is a lower event point:
+ * 				Remove the segments from the status tree that ends in this lower point
+ * 
+ * 			* If it is an upper event point:
+ * 				Insert all segments this point is an upper point to, into the status tree.
+ * 				Check if the new segment(s) give raise to a future intersection. If yes - add it as a new event point to the queue
+ * 
+ *  		* If it is an intersection event point
+ *  			Add the points coordinates as an intersection in the output list
+ *  			Make sure that the segments that intersects switch places correctly in the status.
+ *				Check if the switching places of segments give raise to a future intersection. If yes - add it as a new event point to the queue
+ *		
+ *		
+ * 2. Description of the implemented solution
+ * 		
+ * 		2.1 Event flow
+ * 		The user draws two overlapping polygons in the GUI. When executing the program these points are sent to the CollisionDetection class
+ * 		that performs the algorithm through the following steps:
+ * 		
+ * 		1. The event points are sorted in a self-balancing binary search tree (BBST) in O(log(n)) time
+ * 		2. The status tree is initialized, also a BBST
+ * 		3. For each event point in the queue
+ * 				- Call handleEventPoint(Endpoint p)
+ * 				- See JavaDoc for the methods below for more details
+ * 
+ * 
+ * 
+ * 		2.2 System Architecture
+ * 		The solution is divided into three packages; main, datastructures and algorithm. 
+ * 		 
+ *  	 The algorithm package holds the algorithm implementation and all the logic. Edges and Endpoint classes are what the polygons are made of. 
+ *  	They hold references to each other, what polygon they belong to, as well as math functions for deciding on which side of a line a point lies and so on. 
+ *  	Endpoints keep track of which Edges they are upper and lower points to.
+ *  
+ *		 The datastructures package contains the binary searh trees used for the event queue and the status tree and the main package contains the
+ *		GUI implementation. The reason why there are two BBST implementations in the datastructures package is because the AVLTree implementation was not good enough
+ *		for use as a status tree, so it was replaced by a Java TreeSet for the status.
+ * 
+ * 
+ * 	3. Time complexity
+ * 		Both the event queue and the status tree are self-balancing binary search trees that ensures O(log n) for each insert, retrieve and 
+ * 		delete operation. Only edges that contain the current y-coordinate of the sweep line can exist together in the status tree. 
+ * 		For each arriving event point, the status tree is searched a (small) constant number of times, giving k * log(n) time per event point.
+ * 		Having n end points gives k*n*log(n) + I * log(n) time for the entire algorithm, where I is the number of intersections. 
+ * 
+ * 
+ * 3. User manual
+ * 		- Paint two polygons in the GUI by clicking with the mouse for each point in the polygons. 
+ * 		- Do not cross a polygon with itself.
+ * 		- To make the last line segment in a polygon, press "Finish polygon" button. 
+ * 		- When two polygons are made, click "Compute collision" to run the algorithm.
+ * 		- For each new run, a file is saved with the latest input data. To use it, set the variable String "loadFile" in GUI to the name of the
+ * 		file you want to run. The files are written to the src directory. To draw your own polygons, leave "loadFile" an empty string ""
+ * 
+ */
+
+
+
+
+
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import datastructures.*;
@@ -18,34 +100,14 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	public static boolean isHandlingIntersection = false;
 
 	public static int sweep_Y;
+	
+	
+	
 	/**
 	 * Constructor: 1. Creates a sorted event queue from the two starting points of the polygons.
-	 * 				2. Creates a status
-	 * 
-	 * 					Data structures
-	 * 						Both the event queue and the status are self-balancing binary search trees that
-	 * 						ensures O(log n) for each insert, retrieve and delete operation.
-	 * 					
-	 * 					The sweep line 
-	 * 						The event points in the event queue are sorted such that the points with largest Y coordinates are handled first. Making
-	 * 						up a line sweep approach where the sweep line moves downwards along the y-axis.
-	 * 						The event points can be points that are considered as:
-	 * 							1. Upper point to one or two segments
-	 * 							2. Lower point to one or two segments
-	 * 							3. An intersection between two segments
-	 * 							4. Combinations of upper and lower
-	 * 
-	 * 
-	 * 					Time complexity
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 				Runs handleEventPoint() for each event point in order.
-	 * 
-	 * 				The event queue is a binary search tree that 
-	 * 			
-	 * 
+	 * 				2. Creates a status tree
+	 * 				3. Runs handleEventPoint() and findNewEvent() for each event point in the queue
+	 * 				4. Runs handleIntersection for each event point that is also an intersection between two segments
 	 * 
 	 * @param startpoint1
 	 * @param startpoint2
@@ -83,19 +145,27 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	 * Handles each event point in the event queue in order.
 	 * Creates new event points as intersections are found and places them at the correct position in the event queue.
 	 * Fills an array list with all intersection points that are found.
+	 * 
+	 * Event points can be considered as:
+	 * 		1. Lower point to a segment
+	 * 		2. Upper point to a segment
+	 * 		3. Intersection between two segments
+	 * 		4. A combination of the above
+	 *
 	 * @param Endpoint p
 	 */
 	public void handleEventPoint(Endpoint p){
 
+		//1. Endpoint p is a lower point to one or more segments
 		if(p.isLower){
 			System.out.println("===============================Handle a lower eventpoint=============================");
 
-
+			//1.1 Upate the sweep line to be at the y coordinate of p
 			sweep_Y = p.getRealY();
 			//status.updateAll(sweep_Y); 	//<--------------Updating all segments here gives O(n^2) time since the entire status need to be traversed for each event point, messing up the log n benefit of the BBST
 										//					Solution: Update only when comparing segments
 
-			//Delete all segments that has a lower point in p
+			//1.2 Delete all segments in the status that has a lower point in point p
 			for(Edge e : p.getLowerTo()){
 				System.out.println("(1)Removing segment with id: " + e.id);
 				status.remove(e);
@@ -106,14 +176,18 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 			status.traverseStatus();
 		}
 
+		//2. Endpoint p is an uppe point to one or more segments, but not an intersection.
 		if(p.isUpper() && !p.isIntersection){
 			System.out.println("/n================================Handle an upper event point===================================/n/n");
-
+			
+			//2.1 Update the sweep line
 			sweep_Y = p.getRealY();
 			//status.updateAll(sweep_Y);
 
-
-			if(p.getUpperTo().size()>1){//Point p is an upper point to two segments. Add both.
+			//2.2 Check if p is an upper point to two segments.
+			if(p.getUpperTo().size()>1){
+				
+				// Add both to the status.
 				for(Edge e : p.getUpperTo()){
 					e.updateXandSweep(sweep_Y);
 					status.add(e);
@@ -124,7 +198,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 					else System.out.println("No collisiion between this uppers segments. This case should only appear in the top point of a polygon if it is really simple :)");
 					 */}
 
-				//Find out which segment is leftmost resp rightmost
+				// Find out which segment is leftmost resp rightmost
 				Edge left = p.findLeftmost();//Replaced by leftmost and rightmost inside Endpoints class
 				Edge right = p.findRightmost();
 
@@ -135,10 +209,12 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 				//Check if the newly inserted segments intersect with their neighbours
 				findNewEvent(leftNeighbour, rightNeighbour, p);
 			}
+			
+			//2.3 Case: Point p is an upper point to only one segment
 			else {
-				//This is an upper point to just one segment
+				
+				//Add the segment to the status tree
 				p.getUpperTo().get(0).updateXandSweep(sweep_Y);
-
 				status.add(p.getUpperTo().get(0));
 
 				//Find left and right neighbours of the new segment
@@ -149,7 +225,8 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 				findNewEvent(leftNeighbour, rightNeighbour, p);
 			}
 		}
-
+		
+		// 3. Check if p is an intersection point between two segments (Can never be more since there are two polygons and none is allowed to cross itself)
 		if(p.isIntersection){
 
 			System.out.println("=====================Handling an intersection eventpoint====================\n");
@@ -164,11 +241,13 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 			Edge leftNeighbour = status.lower(left);
 			Edge rightNeighbour = status.higher(right);
 
+			//Check if the switched locations of intersecting segments cause new intersections in the status
 			findNewEvent(leftNeighbour, rightNeighbour, p);
 		}
 
 
 		if(intersecting == true){
+			//Add intersection points to the algorithm output list
 			allIntersections.add(p);
 			intersecting = false;
 		}
@@ -182,6 +261,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		return allIntersections;
 	}
 
+	
 	/**
 	 * Handles segments involved in an intersection.
 	 * Performs cutting of the parts of the segments that lie above intersection point p.
@@ -195,7 +275,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 
 		//2. Delete them from the status
 		tempSeg1.updateXandSweep(tempSeg1.getUpper().getRealY());//There is a need to revert their sweep_Y and currentX to the positions they had when their upper point was last updated. Otherwise they won't be found.
-		tempSeg2.updateXandSweep(tempSeg2.getUpper().getRealY());
+		tempSeg2.updateXandSweep(tempSeg2.getUpper().getRealY());// Is there any case where this approach mess things up?
 		
 		System.out.println("(2) Removing segment with id: " + tempSeg1.id);
 		isHandlingIntersection = true;
@@ -219,17 +299,25 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		sweep_Y = p.getRealY();
 		//status.updateAll(sweep_Y);
 
+		//6. Update the sweep_y of the edges such that they will now be inserted in the new order
 		tempSeg1.updateXandSweep(sweep_Y);
 		tempSeg2.updateXandSweep(sweep_Y);
 
-		//6. Insert the new modified segments into the status again
+		//7. Insert the new modified segments into the status again
 		status.add(tempSeg1);
 		status.add(tempSeg2);
 	}
 
+	
+	
 	/**
-	 * Takes an endpoint p that is an upper point of one or two segments.
-	 * Checks if the segments originating from p intersects with the left and/or right neighbour in the status tree.
+	 * Takes an event point p that is an upper point of one or two segments (could be an intersection point or not).
+	 * Checks if the segments originating from p intersects with the left and/or right neighbour(s) in the status tree.
+	 * This method is called once for each new event point that is an upper point to one or two segments, and once for each intersection event point,
+	 * which is always an upper point to two segments. The method only finds the closest intersection of a line and its neighbour in each run. When an 
+	 * intersection point is handled and two segments switch places in the status tree, this method is called to find out if the switched segments 
+	 * now cross their new neighbours.
+	 * 
 	 * @param leftNeighbour
 	 * @param rightNeighbour
 	 * @param p

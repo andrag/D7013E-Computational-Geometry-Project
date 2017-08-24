@@ -21,7 +21,7 @@ import algorithm.*;
 public class Gui extends JPanel{
 	
 	
-	private String loadFile = "Polygons_2017_06_18_14-57-58.txt";
+	private String loadFile = "Polygons_2017_06_18_14-57-58.txt";// Example: Polygons_2017_06_18_14-57-58.txt
 	
 	private ArrayList<Endpoint> intersections;
 	

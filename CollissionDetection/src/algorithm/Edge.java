@@ -124,7 +124,7 @@ public class Edge implements Comparable<Edge>, Serializable{
 	 * The point lies on the line of another segment
 	 * currentX == o.currentX
 	 */
-	@Override
+	//@Override
 	public int oldcompareTo(Edge o) {
 		//Get the x-coors of the segments that are compared
 		current_X = currentXCoord(CollisionDetection.sweep_Y);
@@ -215,7 +215,7 @@ public class Edge implements Comparable<Edge>, Serializable{
 	}
 	
 	
-	//More basic approach - never cut any segments. Just look at currentX and sweep Y to decide which way to go in teh tree
+	//More basic approach - never cut any segments. Just look at currentX and sweep Y to decide which way to go in the tree
 	public int compareTo(Edge o)
 	{
 		/* Cases
