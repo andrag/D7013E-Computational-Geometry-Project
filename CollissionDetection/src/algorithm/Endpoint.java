@@ -11,7 +11,6 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	public boolean isUpper, isLower= false;
 	public boolean isIntersection = false; 
 	private Edge segment = null;
-	private ArrayList<Edge> intersectingEdges = null;
 	public static final int NONE = 0, POLYGON1 = 1, POLYGON2 = 2;
 	private int belongsTo;
 
@@ -68,6 +67,7 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 		return 400-y;
 	}
 
+	//----------------------------------------------------  Methods for drawing  ----------------------------------------------------------
 	public void setNextSeg(Edge segment){
 		nextSegment = segment;
 	}
@@ -87,6 +87,8 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 	public void paintPoint(Graphics g){
 		g.fillRect(x, y, 3, 3);
 	}
+	
+	//--------------------------------------------------------------------------------------------------------------------------------------
 
 	public void setUpper(){
 		isUpper = true;
@@ -117,14 +119,6 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 
 	public void setSegment(Edge segment){
 		this.segment = segment;
-	}
-
-	public ArrayList<Edge> getIntersectingEdges(){
-		return intersectingEdges;
-	}
-
-	public void setIntersectingEdges(ArrayList<Edge> edges){
-		intersectingEdges = edges;
 	}
 
 
@@ -197,7 +191,7 @@ public class Endpoint implements Comparable<Endpoint>, Serializable{
 
 	
 	/**
-	 * For finding out which side of a segment point lies
+	 * For finding out which side of a segment a point lies
 	 * Returns: 
 	 * 	-1 for leftside
 	 *  0 for on the line

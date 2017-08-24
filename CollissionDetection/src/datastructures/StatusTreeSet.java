@@ -9,16 +9,6 @@ import algorithm.Edge;
 import algorithm.Endpoint;
 
 public class StatusTreeSet extends TreeSet<Edge>{
-
-	
-	/*public void updateAll(int sweep_Y)
-	{
-		Iterator<Edge> iterator = this.iterator();
-		while(iterator.hasNext()){
-			Edge edge = (Edge) iterator.next();
-			edge.updateXandSweep(sweep_Y);
-		}
-	}*/
 	
 	public void traverseStatus()
 	{

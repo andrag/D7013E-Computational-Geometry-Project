@@ -7,10 +7,9 @@ import algorithm.Endpoint;
 
 /**
  * Node class for the AVLTree
- * @author Anders
  */
 
-public class Node implements Serializable{
+public class Node{
 	/**
 	 * 
 	 */

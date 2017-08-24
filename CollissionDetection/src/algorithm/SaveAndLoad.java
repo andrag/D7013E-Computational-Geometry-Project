@@ -23,6 +23,10 @@ import datastructures.AVLTree;
 /**
  * Class for saving and loading polygons to/from text files
  * Used for recreating known problems during debugging.
+ * 
+ * To save, let the String variable loadFile in the GUI class be an empty string ""
+ * To load previously saved data, let the loadFile string be the filename of the data saved in the src directory.
+ * Example of filename: "Polygons_2017_06_18_14-57-58.txt"
  */
 
 public class SaveAndLoad {

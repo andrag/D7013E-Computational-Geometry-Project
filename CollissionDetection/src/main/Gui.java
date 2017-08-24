@@ -41,7 +41,7 @@ public class Gui extends JPanel{
 	
 		
 	public Gui(){
-		setBorder(BorderFactory.createLineBorder(Color.black));//Sets a black border around the panel
+		setBorder(BorderFactory.createLineBorder(Color.black));
 		finishButton = new JButton("Finish polygon");
 		clearButton = new JButton("Clear all");
 		runButton = new JButton("Compute collision");
@@ -82,28 +82,10 @@ public class Gui extends JPanel{
 				runAlgorithm();
 			}
 		});	
-		
-		//testingMethod();
 	}
 	
 	private void runLoadedData()
-	{
-		//Load the polygons and draw them. Set all values as if finished.
-		/*SaveAndLoad.loadPolygons(loadFile);
-		startpoint1 = SaveAndLoad.polygon1.get(0);
-		for(Endpoint p : SaveAndLoad.polygon1)
-		{
-			addGeometry(p.getX(), p.getY());
-		}
-		finishGeometry();
-		
-		startpoint2 = SaveAndLoad.polygon2.get(0);
-		for(Endpoint p : SaveAndLoad.polygon2)
-		{
-			addGeometry(p.getX(), p.getY());
-		}
-		finishGeometry();*/
-		
+	{	
 		SaveAndLoad.loadPolygonsFromTxt(loadFile);
 		ArrayList<Integer> polygon1List = SaveAndLoad.polygon1;
 		ArrayList<Integer> polygon2List = SaveAndLoad.polygon2;
@@ -129,7 +111,7 @@ public class Gui extends JPanel{
 			//If this is not the first line of the polygon
 			if(!firstPoint){
 				int id = CollisionDetection.incrementAndGetEdgeID();
-				Edge newEdge = new Edge(latestpoint, point, id);//KANSKE MÅSTE GÖRA EN NY ENDPOINT FÖR VARJE EDGE PGA ATT DE SKA SÄTTAS IN SOM OLIKA I KÖN, MEN DÅ FALLERAR START/END-BASERADE LOOPAR.
+				Edge newEdge = new Edge(latestpoint, point, id);
 				latestpoint.setNextSeg(newEdge);
 				point.setPrevSeg(newEdge);	
 			}
@@ -197,7 +179,6 @@ public class Gui extends JPanel{
 	private void runAlgorithm(){
 		if(loadFile.isEmpty())
 		{
-			//SaveAndLoad.savePolygons(startpoint1, startpoint2);
 			SaveAndLoad.savePolygonsAsText(startpoint1, startpoint2);
 		}
 		
@@ -272,96 +253,6 @@ public class Gui extends JPanel{
 				
 			}
 		}
-	}
-	
-	private void testingMethod(){
-		//Polygon A: Green
-		
-				//Side 1
-				Endpoint a1 = new Endpoint(53, 400-270);
-				Endpoint a2 = new Endpoint(107, 400-133);
-				Edge a1a2 = new Edge(a1, a2, CollisionDetection.incrementAndGetEdgeID());
-				a1.setNextSeg(a1a2);
-				a2.setPrevSeg(a1a2);
-				a1.setBelonging(Endpoint.POLYGON1);
-				a2.setBelonging(Endpoint.POLYGON1);
-
-				//Side 2
-				Endpoint a3 = new Endpoint(172, 400-136);
-				Edge a2a3 = new Edge(a2, a3, CollisionDetection.incrementAndGetEdgeID());
-				a2.setNextSeg(a2a3);
-				a3.setPrevSeg(a2a3);
-				a3.setBelonging(Endpoint.POLYGON1);
-
-				//Side 3
-				Endpoint a4 = new Endpoint(148, 400-220);
-				Edge a3a4 = new Edge(a3, a4, CollisionDetection.incrementAndGetEdgeID());
-				a3.setNextSeg(a3a4);
-				a4.setPrevSeg(a3a4);
-				a4.setBelonging(Endpoint.POLYGON1);
-
-				//Side 4
-				Endpoint a5 = new Endpoint(253, 400-231);
-				Edge a4a5 = new Edge(a4, a5, CollisionDetection.incrementAndGetEdgeID());
-				a4.setNextSeg(a4a5);
-				a5.setPrevSeg(a4a5);
-				a5.setBelonging(Endpoint.POLYGON1);
-				
-				//Side 5
-				Endpoint a6 = new Endpoint(240, 400-129);
-				Edge a5a6 = new Edge(a5, a6, CollisionDetection.incrementAndGetEdgeID());
-				a5.setNextSeg(a5a6);
-				a6.setPrevSeg(a5a6);
-				a6.setBelonging(Endpoint.POLYGON1);
-				
-				//Side 6
-				Endpoint a7 = new Endpoint(344, 400-141);
-				Edge a6a7 = new Edge(a6, a7, CollisionDetection.incrementAndGetEdgeID());
-				a6.setNextSeg(a6a7);
-				a7.setPrevSeg(a6a7);
-				a7.setBelonging(Endpoint.POLYGON1);
-				
-				//Side 7
-				Endpoint a8 = new Endpoint(332, 400-292);
-				Edge a7a8 = new Edge(a7, a8, CollisionDetection.incrementAndGetEdgeID());
-				a7.setNextSeg(a7a8);
-				a8.setPrevSeg(a7a8);
-				a8.setBelonging(Endpoint.POLYGON1);
-				
-				//Side 8
-				Edge a8a1 = new Edge(a8, a1, CollisionDetection.incrementAndGetEdgeID());
-				a8.setNextSeg(a8a1);
-				a1.setPrevSeg(a8a1);
-				
-				
-				//Polygon B: Red
-				//Side 1
-				Endpoint b1 = new Endpoint(145, 400-304);
-				Endpoint b2 = new Endpoint(58, 400-190);
-				Edge b1b2 = new Edge(b1, b2, CollisionDetection.incrementAndGetEdgeID());
-				b1.setNextSeg(b1b2);
-				b2.setPrevSeg(b1b2);
-				b1.setBelonging(Endpoint.POLYGON2);
-				b2.setBelonging(Endpoint.POLYGON2);
-
-				//Side 2
-				Endpoint b3 = new Endpoint(193, 400-192);
-				Edge b2b3 = new Edge(b2, b3, CollisionDetection.incrementAndGetEdgeID());
-				b2.setNextSeg(b2b3);
-				b3.setPrevSeg(b2b3);
-				b3.setBelonging(Endpoint.POLYGON2);
-
-				//Side 3
-				Edge b3b1 = new Edge(b3, b1, CollisionDetection.incrementAndGetEdgeID());
-				b3.setNextSeg(b3b1);
-				b1.setPrevSeg(b3b1);
-				
-				
-				startpoint1 = a1;
-				startpoint2 = b1;
-				polygonsFinished = 2;
-				runButton.setEnabled(true);
-				repaint();
 	}
 }
 
