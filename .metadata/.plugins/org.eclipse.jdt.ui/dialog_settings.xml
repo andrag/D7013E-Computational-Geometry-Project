@@ -5,6 +5,7 @@
 	<item value="false" key="TypeHierarchyViewPart.linkeditors"/>
 	<item value="C:\Program Files\JUnit" key="org.eclipse.jdt.ui.lastextjar"/>
 	<item value="2" key="TypeHierarchyViewPart.hierarchyview"/>
+	<item value="filter_imports;" key="filters_last_used"/>
 	<section name="org.eclipse.ltk.ui.refactoring.settings">
 		<item value="false" key="renameSubpackages"/>
 		<item value="false" key="updateQualifiedNames"/>
@@ -53,6 +54,23 @@
 	</section>
 	<section name="BuildPathsPropertyPage">
 		<item value="2" key="pageIndex"/>
+	</section>
+	<section name="JavaSearchPage">
+		<item value="1" key="HISTORY_SIZE"/>
+		<item value="false" key="CASE_SENSITIVE"/>
+		<item value="11" key="INCLUDE_MASK"/>
+		<section name="HISTORY0">
+			<item value="true" key="isCaseSensitive"/>
+			<item value="=CollissionDetection/src&lt;algorithm{Endpoint.java[Endpoint^NONE" key="javaElement"/>
+			<item value="0" key="scope"/>
+			<item value="11" key="includeMask"/>
+			<item value="algorithm.Endpoint.NONE" key="pattern"/>
+			<item value="2" key="limitTo"/>
+			<item value="0" key="matchLocations"/>
+			<item value="4" key="searchFor"/>
+			<list key="workingSets">
+			</list>
+		</section>
 	</section>
 	<section name="completion_proposal_size">
 	</section>

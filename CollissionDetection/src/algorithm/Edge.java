@@ -116,8 +116,12 @@ public class Edge implements Comparable<Edge>{
 	 * 
 	 * NB! current_X and sweep_Y must be updated in the Edge object that is passed to this method beforehand!!
 	 */
-	public int compareTo(Edge o)
+	public int compareTo(Edge o) //o is the Edge in the TreeSet
 	{
+		//update current X coord
+		current_X = currentXCoord(CollisionDetection.sweep_Y);
+		o.current_X = o.currentXCoord(CollisionDetection.sweep_Y);
+		
 		/* Cases
 		 *  1. The segments are the same - return 0
 		 *  2. Go left
@@ -169,6 +173,11 @@ public class Edge implements Comparable<Edge>{
 					return 1;
 				}
 			}
+			
+			//Make this point an intersection if it is not already. FOr fixing when an upper is inserted in an existing line.
+			/*if(!sameBelonging(o)){
+				CollisionDetection.intersectionFound(); 
+			}*/
 			
 		}
 		System.out.println("Edge.compareTo() method failed: return 10000"); //For fail checking
@@ -231,5 +240,13 @@ public class Edge implements Comparable<Edge>{
 		if (xi < Math.min(x1,x2) || xi > Math.max(x1,x2)) return null;
 		if (xi < Math.min(x3,x4) || xi > Math.max(x3,x4)) return null;
 		return p;
+	}
+	
+	public boolean sameBelonging(Edge other){
+		if((upper.getBelonging() == other.upper.getBelonging()) && (lower.getBelonging() == other.lower.getBelonging()) && (upper.getBelonging() == other.lower.getBelonging())){
+			//The above might not be true if it already is an intersection, but that's just how it should be.
+			return true;
+		}
+		return false;
 	}
 }

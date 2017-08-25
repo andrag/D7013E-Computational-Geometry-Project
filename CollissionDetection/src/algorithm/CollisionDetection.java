@@ -111,7 +111,7 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	private ArrayList<Endpoint> allIntersections;
 
 	private static int edgeID = 0;//For keeping track of all the edges
-	private boolean intersecting = false;
+	private static boolean intersecting = false;
 
 	public static int sweep_Y;
 	
@@ -192,6 +192,9 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 
 		//2. Endpoint p is an uppe point to one or more segments, but not an intersection.
 		if(p.isUpper() && !p.isIntersection){
+			
+			//2.0 Check if p is on a line of another polygon -> intersection - Fix this in compareTo to not break the time
+			
 			
 			//2.1 Update the sweep line
 			sweep_Y = p.getRealY();
@@ -278,31 +281,26 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 		Edge tempSeg1 = p.getUpperTo().get(0);
 		Edge tempSeg2 = p.getUpperTo().get(1);
 
-		//2. Before deletion, sweep_Y and currentX must be reverted to the last known uppers of the crossed segments
-		// otherwise they wont be found, since they are know sharing the same x-coordinate in the status
-		tempSeg1.updateXandSweep(tempSeg1.getUpper().getRealY());
-		tempSeg2.updateXandSweep(tempSeg2.getUpper().getRealY());
-		
-		//3. Delete them from the status
+		//2. Delete them from the status
 		status.remove(tempSeg1);
 		status.remove(tempSeg2);
 
-		//4. Remove the references at their former upper point
+		//3. Remove the references at their former upper point
 		tempSeg1.getUpper().isUpperTo.remove(tempSeg1);
 		tempSeg2.getUpper().isUpperTo.remove(tempSeg2);
 
-		//5. Set the intersecting point as their new upper point
+		//4. Set the intersecting point as their new upper point
 		tempSeg1.changeUpper(p);
 		tempSeg2.changeUpper(p);
 
-		//6. Update the sweep line such that an add to the status will be just like adding a new upper point of two segments
+		//5. Update the sweep line such that an add to the status will be just like adding a new upper point of two segments
 		sweep_Y = p.getRealY();
 
-		//7. Update the sweep_y of the edges such that they will now be inserted in the new order
+		//6. Update the sweep_y of the edges such that they will now be inserted in the new order
 		tempSeg1.updateXandSweep(sweep_Y);
 		tempSeg2.updateXandSweep(sweep_Y);
 
-		//8. Insert the new modified segments into the status again
+		//7. Insert the new modified segments into the status again
 		status.add(tempSeg1);
 		status.add(tempSeg2);
 	}
@@ -428,5 +426,9 @@ public class CollisionDetection extends ArrayList<Endpoint>{
 	public static int incrementAndGetEdgeID(){
 		edgeID++;
 		return edgeID;
+	}
+	
+	public static void intersectionFound(){
+		intersecting = true;
 	}
 }

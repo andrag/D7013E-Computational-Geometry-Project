@@ -2,20 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="Equals" key="selection"/>
+		<item value="compareTo" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="equals"/>
-			<item value="status.remove"/>
-			<item value="updateXandSweep"/>
+			<item value="compareTo"/>
 			<item value="sweep_Y"/>
-			<item value="status.update"/>
-			<item value="i"/>
-			<item value="intersectionOf"/>
+			<item value="update"/>
+			<item value="The right segment intersect with its right neighbour in both their lower points"/>
+			<item value="isHandlingIntersection"/>
+			<item value="currentXCoord"/>
 			<item value="doIntersect"/>
+			<item value="equals"/>
 		</list>
 		<list key="replacehistory">
 		</list>

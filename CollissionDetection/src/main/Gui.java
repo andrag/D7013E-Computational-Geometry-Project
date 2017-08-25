@@ -20,8 +20,10 @@ import algorithm.*;
 
 public class Gui extends JPanel{
 	
+	//Problems with Polygons_2017_08_25_10-38-15.txt Probably a special case where an line from one polygon crosses an upper point of the other polygon.
+	//Polygons_2017_08_25_10-39-56.txt - Similar to the one above but works, probably because no edge cross an upper point
 	
-	private String loadFile = "Polygons_2017_06_18_14-57-58.txt";// Example: Polygons_2017_06_18_14-57-58.txt
+	private String loadFile = "";// Example: Polygons_2017_06_18_14-57-58.txt More examples exist in the src catalog.
 	
 	private ArrayList<Endpoint> intersections;
 	
