@@ -2,8 +2,8 @@ INDEX VERSION 1.126+C:\Anders\Skola\D7013E Algoritmer för geometriska problem\Wo
 4187470955.index
 3716007315.index
 115418958.index
-1337478678.index
 3028318593.index
+1337478678.index
 3954291735.index
 2535676096.index
 1787405673.index
